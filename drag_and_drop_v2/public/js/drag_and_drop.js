@@ -3,6 +3,7 @@ function DragAndDropTemplates(configuration) {
 
     var gettext;
     var ngettext;
+    let initial = true;
     if ('DragAndDropI18N' in window) {
         // Use DnDv2's local translations
         gettext = window.DragAndDropI18N.gettext;
@@ -34,9 +35,106 @@ function DragAndDropTemplates(configuration) {
             ])
         );
     };
+    var setsequesnce = function(collection, ctx) {
 
+        collection.map(function(zone, loop_counter) {
+            var is_item_in_zone = function(i) { return i.is_placed && !i.is_dragged && (i.zone === zone.uid); };
+        
+            var items_in_zone = $.grep(ctx.items, is_item_in_zone);
+
+            
+                let currentZone_uid = "zone-"+(loop_counter+1);
+                let currentZone = document.querySelector('[data-uid='+currentZone_uid+']');
+                
+                if(currentZone)
+                {
+                    if(items_in_zone.length)
+                        currentZone.setAttribute("sequence",items_in_zone[0].value+1);
+                    else
+                        currentZone.setAttribute("sequence",0);
+                }
+        });
+
+        
+        return;
+    }
     var renderCollection = function(template, collection, ctx) {
+        if(template==zoneTemplate && configuration.max_items_per_zone == 1)
+            {
+                if(initial)
+                {
+                    initial = false;
+                    return collection.map(function(item) {
+                        if(item.drag_disabled==false || item.drag_disabled==true)
+                        {
+                            item.class_name = 'alreadyDragged';
+                        }
+                        
+                        return template(item, ctx);
+                    });
+                }
+
+
+                var seq = setsequesnce(collection, ctx);
+                let sequencedZones = []
+                collection.forEach(function(zone, out_count) {
+                    sequencedZones[out_count] = -1;
+                });
+
+                collection.forEach(function(zone, out_count) {
+                    collection.forEach(function(zone, in_count) {
+                    let currentZone_uid = "zone-"+(in_count+1);
+                        let currentZone = document.querySelector('[data-uid='+currentZone_uid+']');
+                        
+                        if(currentZone){
+
+                            let seq = parseInt(currentZone.getAttribute('sequence'));
+                            if(out_count+1==seq)
+                            {
+                                sequencedZones[out_count] = zone;
+                                
+                            }
+                        }
+                    });
+                });
+
+                collection.forEach(function(zone, out_count) {
+                    let currentZone_uid = "zone-"+(out_count+1);
+                    let currentZone = document.querySelector('[data-uid='+currentZone_uid+']');
+                        
+                    if(currentZone){
+
+                        let seq = parseInt(currentZone.getAttribute('sequence'));
+
+                        if(seq==0)
+                        {
+                            sequencedZones.every(function(value, index){
+                                if(value == -1)
+                                {
+                                    sequencedZones[index] = zone;
+                                    return false;
+                                }
+                                return true;
+                            })
+                        }
+                    }
+                            
+                });
+                
+                return sequencedZones.map(function(zone,index) {
+                    var style =null;
+                    return matchTemplate(zone, ctx, style, index+1);
+                });
+              
+            }
+        
+        
         return collection.map(function(item) {
+            if(item.drag_disabled==false || item.drag_disabled==true)
+            {
+                item.class_name = 'alreadyDragged';
+            }
+            
             return template(item, ctx);
         });
     };
@@ -155,8 +253,26 @@ function DragAndDropTemplates(configuration) {
             (item.grabbed) ? gettext(", draggable, grabbed") : gettext(", draggable")
         );
 
+        var item_counter = h(
+            'div.counter',
+            {id: 'counter'},[
+                h('span',gettext('{count}').replace('{count}', item.value +1))
+            ],
+            
+        );
+
+        
+
+        var item_counter_and_content = h(
+            'div.counter-container',[
+                
+                item_content,
+                item_counter
+            ]
+        );
+ 
         var children = [
-            itemSpinnerTemplate(item), item_content, itemSRNote, item_description
+            itemSpinnerTemplate(item), item_counter_and_content, itemSRNote, item_description
         ];
 
         // Unique key for virtual dom change tracking. Key must be different for
@@ -200,7 +316,20 @@ function DragAndDropTemplates(configuration) {
         }
         var style = bankItemWidthStyles(item, ctx);
         // Placeholder should never be visible.
-        style.visibility = 'hidden';
+        // style.visibility = 'hidden';
+        style.visibility = '';
+        className += 'alreadyDragged';
+        
+        var item_counter = h(
+            'div.counter',
+            {id: 'dragged-counter'},[
+                h('span',gettext('{count}').replace('{count}', item.value +1))
+            ],
+            
+        );
+
+        
+
         return (
             h(
                 'div.option',
@@ -210,21 +339,33 @@ function DragAndDropTemplates(configuration) {
                     attributes: {draggable: false},
                     style: style
                 },
-                itemContentTemplate(item)
+                [
+                    h(
+                        'div.counter-container',[
+                            itemContentTemplate(item),
+                            item_counter
+                            
+                        ]
+                    ),
+                    
+                    
+                ]
             )
         );
     };
 
-    var zoneTemplate = function(zone, ctx) {
+    var matchTemplate = function(zone, ctx, modified_style=null, seq=null) {
         var className = ctx.display_zone_labels ? 'zone-name' : 'zone-name sr';
-        var selector = ctx.display_zone_borders ? 'div.zone.zone-with-borders' : 'div.zone';
+        var selector = ctx.display_zone_borders ? 'div.zone.match.zone-with-borders.match-thefollowing' : 'div.zone';
         // Mark item alignment and render its placed items as children
         var item_wrapper = 'div.item-wrapper.item-align.item-align-' + zone.align;
         // In assessment mode already placed items can be dragged out of their current zone.
         // Only render placed items that are not currently being dragged out of the zone.
         var is_item_in_zone = function(i) { return i.is_placed && !i.is_dragged && (i.zone === zone.uid); };
+        
         var items_in_zone = $.grep(ctx.items, is_item_in_zone);
         var zone_description_id = zone.prefixed_uid + '-description';
+        
         if (items_in_zone.length == 0) {
             var zone_description = h(
                 'div',
@@ -239,7 +380,20 @@ function DragAndDropTemplates(configuration) {
             );
         }
 
+        var zoneCount = items_in_zone.length ? h(
+                            'div.counter',
+                            [
+                                h('span',gettext('{seq}').replace('{seq}', seq))
+                                
+                            ],
+                            
+                        ): null
+                
+                
+                        
+
         return (
+            
             h(
                 selector,
                 {
@@ -253,28 +407,175 @@ function DragAndDropTemplates(configuration) {
                         'data-zone_align': zone.align,
                         'role': 'button',
                         'aria-describedby': zone_description_id,
+                        // 'sequence':parseInt(zone.uid.split('-')[1]),
+                        'sequence':0,
                     },
-                    style: {
+                    // style: modified_style ? modified_style :{
+                    //     top: zone.y_percent + '%', left: zone.x_percent + "%",
+                    //     width: zone.width_percent + '%', height: items_in_zone.length? 74 + (items_in_zone.length*96)+'px':"74px",
+                    // }
+                    // style: modified_style ? modified_style :{
+                    //     top: zone.y_percent + '%', left: zone.x_percent + "%",
+                    //     width: zone.width_percent + '%',
+                    // }
+                    style: (configuration.max_items_per_zone==1)?null :{
                         top: zone.y_percent + '%', left: zone.x_percent + "%",
-                        width: zone.width_percent + '%', height: zone.height_percent + "%",
+                        width: zone.width_percent + '%',
                     }
+                    
+                    
                 },
                 [
-                    h(
-                        'p',
-                        {
-                            className: className,
-                            innerHTML: gettext(zone.title)
-                        },
-                        [
-                            h('span.sr', gettext(', dropzone'))
-                        ]
-                    ),
+                    h('div.nGroup',[
+                        h(
+                            'p',
+                            {
+                                className: className,
+                                innerHTML: gettext(zone.title)
+                            },
+                            [
+                                h('span.sr', gettext(', dropzone'))
+                            ]
+                        ),
+                        zoneCount,
+                    
+                    ]),
+                    // h(
+                    //     'p',
+                    //     {
+                    //         className: className,
+                    //         innerHTML: gettext(zone.title)
+                    //     },
+                    //     [
+                    //         h('span.sr', gettext(', dropzone'))
+                    //     ]
+                    // ),
+                    
                     h('p', { className: 'zone-description sr' }, gettext(zone.description) || gettext('droppable')),
                     h(item_wrapper, renderCollection(itemTemplate, items_in_zone, ctx)),
                     gettext(zone_description)
                 ]
             )
+            
+        );
+    };
+
+    var zoneTemplate = function(zone, ctx, modified_style=null) {
+       var className = ctx.display_zone_labels ? 'zone-name' : 'zone-name sr';
+        var selector = ctx.display_zone_borders ? 'div.zone.zone-with-borders' : 'div.zone';
+        // Mark item alignment and render its placed items as children
+        var item_wrapper = 'div.item-wrapper.item-align.item-align-' + zone.align;
+        // In assessment mode already placed items can be dragged out of their current zone.
+        // Only render placed items that are not currently being dragged out of the zone.
+        var is_item_in_zone = function(i) { return i.is_placed && !i.is_dragged && (i.zone === zone.uid); };
+        
+        var items_in_zone = $.grep(ctx.items, is_item_in_zone);
+        var zone_description_id = zone.prefixed_uid + '-description';
+        
+        if (items_in_zone.length == 0) {
+            var zone_description = h(
+                'div',
+                { id: zone_description_id, className: 'sr'},
+                gettext("No items placed here")
+            );
+        } else {
+            var zone_description = h(
+                'div',
+                { id: zone_description_id, className: 'sr'},
+                gettext('Items placed here: ') + items_in_zone.map(function (item) { return item.displayName; }).join(", ")
+            );
+        }
+        var zoneCount = items_in_zone.length ? h(
+            'div.counter',
+            [
+                h('span',gettext('{seq}').replace('{seq}', 1))
+                
+            ],
+            
+        ): null
+        return (
+            // h(
+            //     'div',
+            //     {
+            //         className: 'className',
+                    
+            //     },
+            //     [
+                    
+            
+            // h(
+            //     'p',
+            //     {
+            //         className: className,
+            //         innerHTML: gettext(zone.title)
+            //     },
+            //     [
+            //         h('span.sr', gettext(', dropzone'))
+            //     ]
+            // ),
+            h(
+                selector,
+                {
+                    key: zone.prefixed_uid,
+                    id: zone.prefixed_uid,
+                    attributes: {
+                        'tabindex': 0,
+                        'dropzone': 'move',
+                        'aria-dropeffect': 'move',
+                        'data-uid': zone.uid,
+                        'data-zone_align': zone.align,
+                        'role': 'button',
+                        'aria-describedby': zone_description_id,
+                        // 'sequence':parseInt(zone.uid.split('-')[1]),
+                        'sequence':0,
+                    },
+                    // style: modified_style ? modified_style :{
+                    //     top: zone.y_percent + '%', left: zone.x_percent + "%",
+                    //     width: zone.width_percent + '%', height: zone.height_percent + "%",
+                    // }
+                    // style: {
+                    //     top: zone.y_percent + '%', left: zone.x_percent + "%",
+                    //     width: zone.width_percent + '%', height: (configuration.max_items_per_zone == 1) ? zone.height_percent + "%": items_in_zone.length? 74 + (items_in_zone.length*96)+'px':"74px",
+                    // }
+                    style: (configuration.max_items_per_zone != 1)? null: {
+                        top: zone.y_percent + '%', left: zone.x_percent + "%",
+                        width: zone.width_percent + '%',
+                    }
+                    
+                },
+                [
+                    h('div.nGroup',[
+                        h(
+                            'p',
+                            {
+                                className: className,
+                                innerHTML: gettext(zone.title)
+                            },
+                            [
+                                h('span.sr', gettext(', dropzone'))
+                            ]
+                        ),
+                        // zoneCount,
+                    
+                    ]),
+                    // h(
+                    //     'p',
+                    //     {
+                    //         className: className,
+                    //         innerHTML: gettext(zone.title)
+                    //     },
+                    //     [
+                    //         h('span.sr', gettext(', dropzone'))
+                    //     ]
+                    // ),
+                    h('p', { className: 'zone-description sr' }, gettext(zone.description) || gettext('droppable')),
+                    
+                    h(item_wrapper, renderCollection(itemTemplate, items_in_zone, ctx)),
+                    h('p', { className: 'pick_drop-text' }, gettext('Pick and Drop')),
+                    gettext(zone_description)
+                ]
+            )
+            
         );
     };
 
@@ -600,6 +901,7 @@ function DragAndDropTemplates(configuration) {
     };
 
     var mainTemplate = function(ctx) {
+        console.log(configuration.max_items_per_zone==1);
         var main_element_properties = {attributes: {role: 'group'}};
         var problemProgress = progressTemplate(ctx);
         var problemTitle = null;
@@ -608,13 +910,23 @@ function DragAndDropTemplates(configuration) {
             problemTitle = h('h3.problem-title', {
                 id: problem_title_id,
                 innerHTML: gettext(ctx.title_html),
-                attributes: {'aria-describedby': problemProgress.properties.id}
+                attributes: {'aria-describedby': problemProgress.properties.id},
+                style: {
+                        'font-family': 'Roc Grotesk',
+                        'font-style': 'normal',
+                        'font-weight': 700,
+                        'font-size': '14px',
+                        'line-height': '100%',
+                        'letter-spacing': '0.03em',
+                        'text-transform': 'uppercase',
+                        'color': '#FFFFFF !important',
+                    }
             });
             main_element_properties.attributes['arial-labelledby'] = problem_title_id;
         } else {
             main_element_properties.attributes['aria-label'] = gettext('Drag and Drop Problem');
         }
-        var problemHeader = ctx.show_problem_header ? h('h4.title1', gettext('Problem')) : null;
+        var problemHeader = (configuration.max_items_per_zone != 1) ? h('h4.title1', gettext('Pick and drop type questions')) : h('h4.title1', gettext('Match type questions'));
         // Render only items in the bank here, including placeholders.  Placed
         // items will be rendered by zoneTemplate.
         var items_in_bank = [];
@@ -659,7 +971,29 @@ function DragAndDropTemplates(configuration) {
                 bank_children.push(itemTemplate(item, ctx));
             }
         });
+        
         bank_children = bank_children.concat(renderCollection(itemPlaceholderTemplate, items_placed, ctx));
+        var new_bank_children = [];
+        bank_children.forEach(function(item, out_count) {
+                            
+            bank_children.forEach(function(item, in_count) {
+                let key_str = item.key;
+                let key_arr = key_str.split('-');
+                let key = -1;
+                if(key_arr[0]=='placeholder'){
+                    key = parseInt(key_arr[1]);
+                }
+                else{
+                    key = parseInt(key_arr[0]);
+                }
+                            
+                if(out_count===key)
+                {
+                    new_bank_children.push(item)
+                }
+                           
+            });
+        });
         var drag_container_style = {};
         var target_img_style = {};
         // If drag_container_max_width is null, we are going to measure the container width after this render.
@@ -671,28 +1005,59 @@ function DragAndDropTemplates(configuration) {
         } else {
             drag_container_style.maxWidth = ctx.drag_container_max_width + 'px';
         }
+
+        if(configuration.max_items_per_zone==1 && new_bank_children.length)
+        {
+            var column1 = h('h5.column',gettext('column 1'));
+            new_bank_children.unshift(column1);
+            bank_children = new_bank_children;
+        }
+
+        else{
+            bank_children = new_bank_children;
+        }
+
         return (
             h('div.themed-xblock.xblock--drag-and-drop', main_element_properties, [
                 h('object.resize-detector', {
                     attributes: {type: 'text/html', tabindex: -1, data: 'about:blank'}
                 }),
                 gettext(problemTitle),
-                gettext(problemProgress),
-                h('div', [forwardKeyboardHelpButtonTemplate(ctx)]),
+                // gettext(problemProgress),
+                // h('div', [forwardKeyboardHelpButtonTemplate(ctx)]),
+                h('div.i-image', {
+                    id:'i-image'
+                }, [
+                    h('img',{
+                        attributes: {src: '/static/edx-theme/images/i-image.png', tabindex: 1}
+                    })
+                ]),
                 h('div.problem', [
                     problemHeader,
-                    h('p', {innerHTML: ctx.problem_html}),
+                    h('p', {innerHTML: ctx.problem_html,
+                            style:{
+                                'font-family': 'DM Sans',
+                                'font-style': 'normal',
+                                'font-weight': '400',
+                                'font-size': '16px',
+                                'color': '#FFFFFF',
+                                'margin-bottom': '5px'
+                            }
+                        }),
                 ]),
                 h('div.drag-container', {style: drag_container_style}, [
                     h('div.item-bank', item_bank_properties, bank_children),
                     h('div.target', {attributes: {'role': 'group', 'arial-label': gettext('Drop Targets')}}, [
+                        (configuration.max_items_per_zone==1)?
+                        h('h5.column',gettext('column 2')):null,
                         itemFeedbackPopupTemplate(ctx),
                         h('div.target-img-wrapper', [
-                            h('img.target-img', {
-                                src: ctx.target_img_src,
-                                alt: ctx.target_img_description,
-                                style: target_img_style
-                            }),
+                            // (configuration.max_items_per_zone==1)?null:
+                            // h('img.target-img', {
+                            //     src: ctx.target_img_src,
+                            //     alt: ctx.target_img_description,
+                            //     style: target_img_style
+                            // }),
                             renderCollection(zoneTemplate, ctx.zones, ctx)
                         ]),
                     ]),

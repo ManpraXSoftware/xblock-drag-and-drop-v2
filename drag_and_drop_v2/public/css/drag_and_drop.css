@@ -66,12 +66,56 @@
 /* Shared styles used in header and footer */
 
 .xblock--drag-and-drop .title1 {
-    color: #555555;
-    text-transform: uppercase;
-    font-weight: bold;
-    font-style: normal;
-    margin: 10px 0;
-    margin-top: 20px;
+        color: #A48CFA !important;
+        text-transform: uppercase;
+        font-weight: bold;
+        font-style: normal;
+        margin-top: 16px;
+        font-family: 'Roc Grotesk';
+        font-style: normal;
+        font-weight: 700;
+        font-size: 14px;
+        line-height: 100%;
+        letter-spacing: 0.03em;
+}
+
+
+div#i-image {
+    margin-left: 270px;
+    margin-top: -23px;
+}
+
+.counter-container {
+    display: flex;
+}
+
+.counter{
+    width: 20px;
+    height: 20px;
+    /* background: #E1D6FF; */
+    background-color:#E1D6FF;
+    color: #252030;
+    border-radius: 50%;
+    position: relative;
+    margin-left: auto;
+    flex-shrink: 0;
+    border: 1px solid #252030;
+}
+
+.nGroup {
+    /* display: flex;
+    padding: 9px; */
+    
+    padding-bottom: 8px;
+    padding-top: 8px;
+}
+
+
+.counter span {
+    position: absolute;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    left: 50%;
 }
 
 /* drag-container holds the .items and the .target image */
@@ -82,11 +126,33 @@
     padding: 1%;
     background-color: #ebf0f2;
     position: relative;
+    display: flex;
+    background-color: #16131B !important;
 }
+
+
+
 
 /*** DRAGGABLE ITEMS ***/
 
 .xblock--drag-and-drop .item-bank {
+    display: -ms-flexbox;
+    display: grid;
+    -ms-flex-flow: row wrap;
+    /* flex-flow: row wrap; */
+    -ms-justify-content: flex-start;
+    /* justify-content: flex-start; */
+    -ms-flex-align: center;
+    /* align-items: center; */
+    position: absolute;
+    
+    
+    /* border: 1px solid rgba(0, 0, 0, 0.1); */
+    /* border-radius: 3px; */
+    /* padding: 0; */
+}
+
+/* .xblock--drag-and-drop .item-bank {
     display: -ms-flexbox;
     display: flex;
 
@@ -103,9 +169,38 @@
     border: 1px solid rgba(0, 0, 0, 0.1);
     border-radius: 3px;
     padding: 0; /* padding: 5px looks better but makes some blocks to change in size when dropped onto the target; */
+/* }  */
+
+.xblock--drag-and-drop .drag-container .option.alreadyDragged {
+    background-color: #E1D6FF !important;
+    color: #2E2B36;
 }
 
 .xblock--drag-and-drop .drag-container .option {
+    /* display: inline-block; */
+    width: 95%;
+    min-width: 4em;
+    /* max-width: 100%; */
+    border: 1px solid transparent;
+    border-radius: 3px;
+    box-sizing: border-box;
+    margin: 5px;
+    padding: 10px;
+    text-align: center;
+    background-color: #1d5280;
+    font-size: 14px;
+    color: #fff;
+    /* color: red; */
+    opacity: 1;
+    outline-color: #fff;
+    outline-style: none;
+    z-index: 10 !important;
+    -webkit-touch-callout: none;
+    background-color: rgba(46, 43, 54, 0.6) !important;
+}
+
+
+/* .xblock--drag-and-drop .drag-container .option {
     display: inline-block;
     width: auto;
     min-width: 4em;
@@ -121,10 +216,37 @@
     color: #fff;
     opacity: 1;
     outline-color: #fff;
-    outline-style: none;
+    outline-style: none; */
     /* Some versions of the drag and drop library try to fiddle with this */
-    z-index: 10 !important;
+    /* z-index: 10 !important;
     -webkit-touch-callout: none;
+} */
+
+p.pick_drop-text {
+    color: #A48CFA;
+    border-radius: 4px;
+    padding: 8px;
+    /* width: 148px; */
+    border: 2px dotted #666;
+    /* margin: 8px; */
+    text-align: center;
+    font-size: 12px;
+    font-weight: 400;
+    margin-top: 8px;
+}
+
+@media screen and (max-width: 575px){
+    .xblock--drag-and-drop .drag-container>div:nth-child(2) {
+        margin-top: 0px;
+    }
+
+    div[role=presentation] {
+        padding: 0px;
+    }
+
+    .MainBar_tab-content__wQVys {
+        padding: 0px !important;
+    }
 }
 
 @media screen and (max-width: 480px) {
@@ -133,12 +255,13 @@
         -ms-flex-flow: row nowrap;
         flex-flow: row nowrap;
         overflow-x: auto;
+        border: 0px;
+        position: static !important;
+        flex-basis: 50%;
     }
 
     .xblock--drag-and-drop .drag-container .item-bank .option {
-        flex-shrink: 0;
-        flex-grow: 0;
-        max-width: 80%;
+       width: 90%;
     }
 }
 
@@ -256,20 +379,30 @@
 
 .xblock--drag-and-drop .target-img-wrapper {
     /* This element is required for Firefox due to https://bugzilla.mozilla.org/show_bug.cgi?id=975632 */
-    display: table-row;
+    
+    display: block;
 }
+
+/* .xblock--drag-and-drop .target-img {
+    display: table-cell;
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+} */
 
 .xblock--drag-and-drop .target-img {
     display: table-cell;
     width: 100%;
     max-width: 100%;
     height: auto;
+    visibility: hidden;
 }
 
 @media screen and (max-width: 480px) {
     .xblock--drag-and-drop .target {
         overflow: auto;
         display: block;
+        flex-basis: 50%;
     }
 
     .xblock--drag-and-drop .target-img {
@@ -278,35 +411,28 @@
     }
 
     .xblock--drag-and-drop .target-img-wrapper {
-        display: inline-block;
         position: relative;
     }
 }
 
 .xblock--drag-and-drop .zone {
-    position: absolute;
+    position: static;
+    display: block;
+    margin-bottom: 10px;
+    border-radius: 4px;
+    padding: 8px;
+}
 
-    display: -webkit-box;
-    display: -moz-box;
-    display: -ms-flexbox;
-    display: -webkit-flex;
-    display: flex;
+/* .xblock--drag-and-drop .zone.match {
+    position: static;
+    display: block;
+    margin-bottom: 10px;
+    border-radius: 4px;
+} */
 
-    /* Internet Explorer 10 */
-    -ms-flex-pack:center;
-    -ms-flex-align:center;
-
-    /* Firefox */
-    -moz-box-pack:center;
-    -moz-box-align:center;
-
-    /* Safari, Opera, and Chrome */
-    -webkit-box-pack:center;
-    -webkit-box-align:center;
-
-    /* W3C */
-    box-pack:center;
-    box-align:center;
+h5.column {
+    margin-left: 24px;
+    color: #A48CFA !important;
 }
 
 .xblock--drag-and-drop .zone-with-borders {
@@ -319,7 +445,7 @@
     outline: 2px dotted #a5a5a5;
 }
 
-.xblock--drag-and-drop .drag-container .target .zone p {
+/* .xblock--drag-and-drop .drag-container .target .zone p {
     font-family: Arial;
     font-size: 16px;
     font-weight: bold;
@@ -334,6 +460,25 @@
     align-items: center;
     justify-content: center;
     text-align: center;
+} */
+
+.xblock--drag-and-drop .drag-container .target .zone p.zone-name {
+    font-family: Arial;
+    font-size: 14px;
+    font-weight: bold;
+    margin: 0;
+    text-align: center;
+}
+
+/* .xblock--drag-and-drop .drag-container .target .zone.match p.zone-name {
+    position: static;
+    transform: none;
+    padding: 0px;
+} */
+
+
+p.zone-count {
+    margin-left: 186px;
 }
 
 /*** FEEDBACK ***/
@@ -876,6 +1021,7 @@
     background-color: #ffffff;
     color: #000000;
 }
+
 
 
 /* Prevent mobile browsers from emulating hover effects on item tap, which can be confusing. */
