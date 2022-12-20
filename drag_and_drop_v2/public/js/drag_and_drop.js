@@ -580,15 +580,89 @@ function DragAndDropTemplates(configuration) {
     };
 
     var feedbackTemplate = function(ctx) {
+        //         <span class="status ${'' if hide_correctness == True else status.classname}" id="status_${status_id}"
+        //       data-tooltip="${'' if hide_correctness == True else status.display_tooltip}">
+        // % endif
+        //   % if hide_correctness == False:
+        //   <span class="sr">${status.display_name}</span>
+        //   % if status.display_name =='correct':
+        //       <img src='../../../../static/images/Vector.png'> 
+        //       <span class="crt">Correct</span>
+        //   % elif status.display_name =='incorrect':
+        //       <img src='../../../../static/images/Cross.png'> 
+        //       <span class="incrt">Incorrect</span>
+        //    % else:
+        //       <span class="status-icon" aria-hidden="true"></span>
+        //    %endif
+        
+        //   % endif
+        // </span>
         var messages = ctx.overall_feedback_messages || [];
-        var feedback_display = messages.length > 0 ? 'block' : 'none';
-        var feedback_messages = messages.map(function(message) {
-            var selector = "p.message";
-            if (message.message_class) {
-                selector += "."+message.message_class;
+        // var feedback_display = messages.length > 0 ? 'block' : 'none';
+        var feedback_display = 'none';
+        var feedback_messages = h();
+        if(messages.length){
+            var message = messages[0];
+            if(Object.keys(message).length){
+
+                if(message.message_class=='correct'){
+                    feedback_display = 'block';
+                    feedback_messages = h('span.status',{attributes:{'id':"status"}},[
+                        h('img',{attributes:{'src':'../../../../static/images/Vector.png'}}),
+                        h('span.crt',gettext('Correct'))
+                        
+
+                    ]);
+                }
+                else if(message.message_class=='incorrect'){
+                    feedback_display = 'block';
+                    feedback_messages = h('span.status',{attributes:{'id':"status"}},[
+                        h('img',{attributes:{'src':'../../../../static/images/Cross.png'}}),
+                        h('span.incrt',gettext('Incorrect'))
+                        
+
+                    ]);
+                    
+                }
+                console.log(message.message_class);
             }
-            return h(selector, {innerHTML: gettext(message.message)}, []);
-        });
+        }
+        console.log(messages.length,messages[0],Object.keys(messages[0]).length);
+                        
+        // var feedback_messages = messages.map(function(message) {
+            
+        //     if(message.message_class=='incorrect' || message.message_class=='correct')
+        //     {
+        //         if(message.message_class=='incorrect'){
+        //             return h('span.status',{attributes:{'id':"status"}},[
+        //                 h('img',{attributes:{'src':'../../../../static/images/Cross.png'}}),
+        //                 h('span.incrt',gettext('Incorrect'))
+                        
+
+        //             ]);
+                    
+        //         }
+
+        //         if(message.message_class=='correct'){
+        //             return h('span.status',{attributes:{'id':"status"}},[
+        //                 h('img',{attributes:{'src':'../../../../static/images/Vector.png'}}),
+        //                 h('span.crt',gettext('Correct'))
+                        
+
+        //             ]);
+        //         }
+
+        //     }
+        //     return ;
+            // var selector = "p.message";
+            // if (message.message_class) {
+            //     selector += "."+message.message_class;
+            // }
+            // return h(selector, {innerHTML: gettext(message.message)}, []);
+        // });
+
+        var indicator_div = h('div.indicator-container',{},gettext(feedback_messages));
+        // console.log(feedback_messages);
 
         return (
             h('div.feedback', {attributes: {'role': 'group', 'aria-label': gettext('Feedback')}}, [
@@ -597,7 +671,8 @@ function DragAndDropTemplates(configuration) {
                     {},
                     [
                         h('h3.title1', { style: { display: feedback_display } }, gettext('Feedback')),
-                        h('div.messages', { style: { display: feedback_display } }, gettext(feedback_messages)),
+                        // h('div.messages', { style: { display: feedback_display } }, gettext(feedback_messages)),
+                        h('div.messages', { style: { display: feedback_display } }, gettext(indicator_div)),
                     ]
                 )
             ])
@@ -901,7 +976,6 @@ function DragAndDropTemplates(configuration) {
     };
 
     var mainTemplate = function(ctx) {
-        console.log(configuration.max_items_per_zone==1);
         var main_element_properties = {attributes: {role: 'group'}};
         var problemProgress = progressTemplate(ctx);
         var problemTitle = null;
@@ -919,7 +993,7 @@ function DragAndDropTemplates(configuration) {
                         'line-height': '100%',
                         'letter-spacing': '0.03em',
                         'text-transform': 'uppercase',
-                        'color': '#FFFFFF !important',
+                        
                     }
             });
             main_element_properties.attributes['arial-labelledby'] = problem_title_id;
@@ -1040,7 +1114,6 @@ function DragAndDropTemplates(configuration) {
                                 'font-style': 'normal',
                                 'font-weight': '400',
                                 'font-size': '16px',
-                                'color': '#FFFFFF',
                                 'margin-bottom': '5px'
                             }
                         }),
