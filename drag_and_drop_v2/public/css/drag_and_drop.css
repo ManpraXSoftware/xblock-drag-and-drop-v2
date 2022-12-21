@@ -353,6 +353,66 @@ p.pick_drop-text {
 .xblock--drag-and-drop .zone .item-align-left {
     text-align: left;
 }
+
+.view_explanation{
+    background: #17111b;
+    border: 1px solid;
+    border-radius: 60px;
+    font-family: 'DM Sans';
+    font-style: normal;
+    font-weight: 400;
+    font-size: 14px;
+    line-height: 100%;
+    display: flex;
+    align-items: center;
+    text-align: center;
+    letter-spacing: 0.01em;
+    color: #FFFFFF;
+    margin-top: 10px;
+}
+
+.arrow-image{
+    padding-left: 10px;
+}
+
+.explaination-card{
+    box-sizing: border-box;
+    align-items: flex-start;
+    padding: 24px 16px;
+    gap: 24px;
+    width: 100%;
+    background: rgba(46,43,54,0.6);
+    border: 1px solid #47444f;
+    border-radius: 8px;
+    flex: 0 0 auto;
+    order: 0;
+    margin-top: 16px;
+
+}
+
+.explaination-card h2{
+    font-family: 'DM Sans';
+    font-style: normal;
+    font-weight: 700 !important;
+    font-size: 18px !important;
+    line-height: 120% !important;
+    letter-spacing: -0.01em;
+}
+
+.submit-label{
+    width: 84px;
+    height: 14px;
+    font-family: 'DM Sans';
+    font-style: normal;
+    font-weight: 400;
+    font-size: 14px;
+    line-height: 100%;
+    align-items: center;
+    text-align: center;
+    letter-spacing: 0.01em;
+    color: #FFFFFF;
+}
+
 .xblock--drag-and-drop .zone .item-align-right {
     text-align: right;
 }
@@ -921,13 +981,13 @@ p.zone-count {
     height: 100%;
 }
 
-.ltr .xblock--drag-and-drop .sidebar-buttons .sidebar-button-wrapper {
+/* .ltr .xblock--drag-and-drop .sidebar-buttons .sidebar-button-wrapper {
     border-right: 1px solid #ddd;
-}
+} */
 
-.rtl .xblock--drag-and-drop .sidebar-buttons .sidebar-button-wrapper {
+/* .rtl .xblock--drag-and-drop .sidebar-buttons .sidebar-button-wrapper {
     border-left: 1px solid #ddd;
-}
+} */
 
 .ltr .xblock--drag-and-drop .sidebar-buttons .sidebar-button-wrapper:first-child {
     padding-left: 0;

@@ -15,131 +15,123 @@ function DragAndDropTemplates(configuration) {
     }
     if (typeof gettext == "undefined") {
         // No translations -- used by test environment
-        gettext = function(string) { return string; };
-        ngettext = function(strA, strB, n) { return n == 1 ? strA : strB; };
+        gettext = function (string) { return string; };
+        ngettext = function (strA, strB, n) { return n == 1 ? strA : strB; };
     }
     var h = virtualDom.h;
 
-    var isMobileScreen = function() {
+    var isMobileScreen = function () {
         return window.matchMedia('screen and (max-width: 480px)').matches;
     };
 
-    var itemSpinnerTemplate = function(item) {
+    var itemSpinnerTemplate = function (item) {
         if (!item.xhr_active) {
             return null;
         }
         return (
-            h("div.spinner-wrapper", {key: item.value + '-spinner'}, [
-                h("span.fa.fa-spin.fa-spinner", {attributes: {'aria-hidden': true}}),
+            h("div.spinner-wrapper", { key: item.value + '-spinner' }, [
+                h("span.fa.fa-spin.fa-spinner", { attributes: { 'aria-hidden': true } }),
                 h("span.sr", gettext('Submitting'))
             ])
         );
     };
-    var setsequesnce = function(collection, ctx) {
+    var setsequesnce = function (collection, ctx) {
 
-        collection.map(function(zone, loop_counter) {
-            var is_item_in_zone = function(i) { return i.is_placed && !i.is_dragged && (i.zone === zone.uid); };
-        
+        collection.map(function (zone, loop_counter) {
+            var is_item_in_zone = function (i) { return i.is_placed && !i.is_dragged && (i.zone === zone.uid); };
+
             var items_in_zone = $.grep(ctx.items, is_item_in_zone);
 
-            
-                let currentZone_uid = "zone-"+(loop_counter+1);
-                let currentZone = document.querySelector('[data-uid='+currentZone_uid+']');
-                
-                if(currentZone)
-                {
-                    if(items_in_zone.length)
-                        currentZone.setAttribute("sequence",items_in_zone[0].value+1);
-                    else
-                        currentZone.setAttribute("sequence",0);
-                }
+
+            let currentZone_uid = "zone-" + (loop_counter + 1);
+            let currentZone = document.querySelector('[data-uid=' + currentZone_uid + ']');
+
+            if (currentZone) {
+                if (items_in_zone.length)
+                    currentZone.setAttribute("sequence", items_in_zone[0].value + 1);
+                else
+                    currentZone.setAttribute("sequence", 0);
+            }
         });
 
-        
+
         return;
     }
-    var renderCollection = function(template, collection, ctx) {
-        if(template==zoneTemplate && configuration.max_items_per_zone == 1)
-            {
-                if(initial)
-                {
-                    initial = false;
-                    return collection.map(function(item) {
-                        if(item.drag_disabled==false || item.drag_disabled==true)
-                        {
-                            item.class_name = 'alreadyDragged';
-                        }
-                        
-                        return template(item, ctx);
-                    });
-                }
+    var renderCollection = function (template, collection, ctx) {
+        if (template == zoneTemplate && configuration.max_items_per_zone == 1) {
+            if (initial) {
+                initial = false;
+                return collection.map(function (item) {
+                    if (item.drag_disabled == false || item.drag_disabled == true) {
+                        item.class_name = 'alreadyDragged';
+                    }
 
-
-                var seq = setsequesnce(collection, ctx);
-                let sequencedZones = []
-                collection.forEach(function(zone, out_count) {
-                    sequencedZones[out_count] = -1;
+                    return template(item, ctx);
                 });
+            }
 
-                collection.forEach(function(zone, out_count) {
-                    collection.forEach(function(zone, in_count) {
-                    let currentZone_uid = "zone-"+(in_count+1);
-                        let currentZone = document.querySelector('[data-uid='+currentZone_uid+']');
-                        
-                        if(currentZone){
 
-                            let seq = parseInt(currentZone.getAttribute('sequence'));
-                            if(out_count+1==seq)
-                            {
-                                sequencedZones[out_count] = zone;
-                                
-                            }
-                        }
-                    });
-                });
+            var seq = setsequesnce(collection, ctx);
+            let sequencedZones = []
+            collection.forEach(function (zone, out_count) {
+                sequencedZones[out_count] = -1;
+            });
 
-                collection.forEach(function(zone, out_count) {
-                    let currentZone_uid = "zone-"+(out_count+1);
-                    let currentZone = document.querySelector('[data-uid='+currentZone_uid+']');
-                        
-                    if(currentZone){
+            collection.forEach(function (zone, out_count) {
+                collection.forEach(function (zone, in_count) {
+                    let currentZone_uid = "zone-" + (in_count + 1);
+                    let currentZone = document.querySelector('[data-uid=' + currentZone_uid + ']');
+
+                    if (currentZone) {
 
                         let seq = parseInt(currentZone.getAttribute('sequence'));
+                        if (out_count + 1 == seq) {
+                            sequencedZones[out_count] = zone;
 
-                        if(seq==0)
-                        {
-                            sequencedZones.every(function(value, index){
-                                if(value == -1)
-                                {
-                                    sequencedZones[index] = zone;
-                                    return false;
-                                }
-                                return true;
-                            })
                         }
                     }
-                            
                 });
-                
-                return sequencedZones.map(function(zone,index) {
-                    var style =null;
-                    return matchTemplate(zone, ctx, style, index+1);
-                });
-              
-            }
-        
-        
-        return collection.map(function(item) {
-            if(item.drag_disabled==false || item.drag_disabled==true)
-            {
+            });
+
+            collection.forEach(function (zone, out_count) {
+                let currentZone_uid = "zone-" + (out_count + 1);
+                let currentZone = document.querySelector('[data-uid=' + currentZone_uid + ']');
+
+                if (currentZone) {
+
+                    let seq = parseInt(currentZone.getAttribute('sequence'));
+
+                    if (seq == 0) {
+                        sequencedZones.every(function (value, index) {
+                            if (value == -1) {
+                                sequencedZones[index] = zone;
+                                return false;
+                            }
+                            return true;
+                        })
+                    }
+                }
+
+            });
+
+            return sequencedZones.map(function (zone, index) {
+                var style = null;
+                return matchTemplate(zone, ctx, style, index + 1);
+            });
+
+        }
+
+
+        return collection.map(function (item) {
+            if (item.drag_disabled == false || item.drag_disabled == true) {
                 item.class_name = 'alreadyDragged';
             }
-            
+
             return template(item, ctx);
         });
     };
 
-    var getZone = function(zoneUID, ctx) {
+    var getZone = function (zoneUID, ctx) {
         for (var i = 0; i < ctx.zones.length; i++) {
             if (ctx.zones[i].uid === zoneUID) {
                 return ctx.zones[i];
@@ -147,7 +139,7 @@ function DragAndDropTemplates(configuration) {
         }
     };
 
-    var bankItemWidthStyles = function(item, ctx) {
+    var bankItemWidthStyles = function (item, ctx) {
         var style = {};
         if (item.widthPercent) {
             // The item bank container is often wider than the background image, and the
@@ -162,7 +154,7 @@ function DragAndDropTemplates(configuration) {
         return style;
     };
 
-    var itemContentTemplate = function(item) {
+    var itemContentTemplate = function (item) {
         var item_content_html = gettext(item.displayName);
         if (item.imageURL) {
             item_content_html = '<img src="' + item.imageURL + '" alt="' + item.imageDescription + '" />';
@@ -171,7 +163,7 @@ function DragAndDropTemplates(configuration) {
         return h('div', { key: key, innerHTML: item_content_html, className: "item-content" });
     };
 
-    var itemTemplate = function(item, ctx) {
+    var itemTemplate = function (item, ctx) {
         // Define properties
         var className = (item.class_name) ? item.class_name : "";
         var zone = getZone(item.zone, ctx) || {};
@@ -244,7 +236,7 @@ function DragAndDropTemplates(configuration) {
             item_content.properties.attributes = { 'aria-describedby': item_description_id };
             item_description = h(
                 'div.sr.description',
-                { key: item_description_id, id: item_description_id},
+                { key: item_description_id, id: item_description_id },
                 description_content
             );
         }
@@ -255,22 +247,22 @@ function DragAndDropTemplates(configuration) {
 
         var item_counter = h(
             'div.counter',
-            {id: 'counter'},[
-                h('span',gettext('{count}').replace('{count}', item.value +1))
-            ],
-            
+            { id: 'counter' }, [
+            h('span', gettext('{count}').replace('{count}', item.value + 1))
+        ],
+
         );
 
-        
+
 
         var item_counter_and_content = h(
-            'div.counter-container',[
-                
-                item_content,
-                item_counter
-            ]
+            'div.counter-container', [
+
+            item_content,
+            item_counter
+        ]
         );
- 
+
         var children = [
             itemSpinnerTemplate(item), item_counter_and_content, itemSRNote, item_description
         ];
@@ -306,7 +298,7 @@ function DragAndDropTemplates(configuration) {
     // the original item is rendered in the bank. The function of the placeholder is to take up the
     // same amount of space as the original item so that the bank does not collapse when you've dragged
     // all items out.
-    var itemPlaceholderTemplate = function(item, ctx) {
+    var itemPlaceholderTemplate = function (item, ctx) {
         var className = "";
         if (item.has_image) {
             className += " " + "option-with-image";
@@ -319,16 +311,16 @@ function DragAndDropTemplates(configuration) {
         // style.visibility = 'hidden';
         style.visibility = '';
         className += 'alreadyDragged';
-        
+
         var item_counter = h(
             'div.counter',
-            {id: 'dragged-counter'},[
-                h('span',gettext('{count}').replace('{count}', item.value +1))
-            ],
-            
+            { id: 'dragged-counter' }, [
+            h('span', gettext('{count}').replace('{count}', item.value + 1))
+        ],
+
         );
 
-        
+
 
         return (
             h(
@@ -336,64 +328,64 @@ function DragAndDropTemplates(configuration) {
                 {
                     key: 'placeholder-' + item.value,
                     className: className,
-                    attributes: {draggable: false},
+                    attributes: { draggable: false },
                     style: style
                 },
                 [
                     h(
-                        'div.counter-container',[
-                            itemContentTemplate(item),
-                            item_counter
-                            
-                        ]
+                        'div.counter-container', [
+                        itemContentTemplate(item),
+                        item_counter
+
+                    ]
                     ),
-                    
-                    
+
+
                 ]
             )
         );
     };
 
-    var matchTemplate = function(zone, ctx, modified_style=null, seq=null) {
+    var matchTemplate = function (zone, ctx, modified_style = null, seq = null) {
         var className = ctx.display_zone_labels ? 'zone-name' : 'zone-name sr';
         var selector = ctx.display_zone_borders ? 'div.zone.match.zone-with-borders.match-thefollowing' : 'div.zone';
         // Mark item alignment and render its placed items as children
         var item_wrapper = 'div.item-wrapper.item-align.item-align-' + zone.align;
         // In assessment mode already placed items can be dragged out of their current zone.
         // Only render placed items that are not currently being dragged out of the zone.
-        var is_item_in_zone = function(i) { return i.is_placed && !i.is_dragged && (i.zone === zone.uid); };
-        
+        var is_item_in_zone = function (i) { return i.is_placed && !i.is_dragged && (i.zone === zone.uid); };
+
         var items_in_zone = $.grep(ctx.items, is_item_in_zone);
         var zone_description_id = zone.prefixed_uid + '-description';
-        
+
         if (items_in_zone.length == 0) {
             var zone_description = h(
                 'div',
-                { id: zone_description_id, className: 'sr'},
+                { id: zone_description_id, className: 'sr' },
                 gettext("No items placed here")
             );
         } else {
             var zone_description = h(
                 'div',
-                { id: zone_description_id, className: 'sr'},
+                { id: zone_description_id, className: 'sr' },
                 gettext('Items placed here: ') + items_in_zone.map(function (item) { return item.displayName; }).join(", ")
             );
         }
 
         var zoneCount = items_in_zone.length ? h(
-                            'div.counter',
-                            [
-                                h('span',gettext('{seq}').replace('{seq}', seq))
-                                
-                            ],
-                            
-                        ): null
-                
-                
-                        
+            'div.counter',
+            [
+                h('span', gettext('{seq}').replace('{seq}', seq))
+
+            ],
+
+        ) : null
+
+
+
 
         return (
-            
+
             h(
                 selector,
                 {
@@ -408,7 +400,7 @@ function DragAndDropTemplates(configuration) {
                         'role': 'button',
                         'aria-describedby': zone_description_id,
                         // 'sequence':parseInt(zone.uid.split('-')[1]),
-                        'sequence':0,
+                        'sequence': 0,
                     },
                     // style: modified_style ? modified_style :{
                     //     top: zone.y_percent + '%', left: zone.x_percent + "%",
@@ -418,15 +410,15 @@ function DragAndDropTemplates(configuration) {
                     //     top: zone.y_percent + '%', left: zone.x_percent + "%",
                     //     width: zone.width_percent + '%',
                     // }
-                    style: (configuration.max_items_per_zone==1)?null :{
+                    style: (configuration.max_items_per_zone == 1) ? null : {
                         top: zone.y_percent + '%', left: zone.x_percent + "%",
                         width: zone.width_percent + '%',
                     }
-                    
-                    
+
+
                 },
                 [
-                    h('div.nGroup',[
+                    h('div.nGroup', [
                         h(
                             'p',
                             {
@@ -438,7 +430,7 @@ function DragAndDropTemplates(configuration) {
                             ]
                         ),
                         zoneCount,
-                    
+
                     ]),
                     // h(
                     //     'p',
@@ -450,59 +442,59 @@ function DragAndDropTemplates(configuration) {
                     //         h('span.sr', gettext(', dropzone'))
                     //     ]
                     // ),
-                    
+
                     h('p', { className: 'zone-description sr' }, gettext(zone.description) || gettext('droppable')),
                     h(item_wrapper, renderCollection(itemTemplate, items_in_zone, ctx)),
                     gettext(zone_description)
                 ]
             )
-            
+
         );
     };
 
-    var zoneTemplate = function(zone, ctx, modified_style=null) {
-       var className = ctx.display_zone_labels ? 'zone-name' : 'zone-name sr';
+    var zoneTemplate = function (zone, ctx, modified_style = null) {
+        var className = ctx.display_zone_labels ? 'zone-name' : 'zone-name sr';
         var selector = ctx.display_zone_borders ? 'div.zone.zone-with-borders' : 'div.zone';
         // Mark item alignment and render its placed items as children
         var item_wrapper = 'div.item-wrapper.item-align.item-align-' + zone.align;
         // In assessment mode already placed items can be dragged out of their current zone.
         // Only render placed items that are not currently being dragged out of the zone.
-        var is_item_in_zone = function(i) { return i.is_placed && !i.is_dragged && (i.zone === zone.uid); };
-        
+        var is_item_in_zone = function (i) { return i.is_placed && !i.is_dragged && (i.zone === zone.uid); };
+
         var items_in_zone = $.grep(ctx.items, is_item_in_zone);
         var zone_description_id = zone.prefixed_uid + '-description';
-        
+
         if (items_in_zone.length == 0) {
             var zone_description = h(
                 'div',
-                { id: zone_description_id, className: 'sr'},
+                { id: zone_description_id, className: 'sr' },
                 gettext("No items placed here")
             );
         } else {
             var zone_description = h(
                 'div',
-                { id: zone_description_id, className: 'sr'},
+                { id: zone_description_id, className: 'sr' },
                 gettext('Items placed here: ') + items_in_zone.map(function (item) { return item.displayName; }).join(", ")
             );
         }
         var zoneCount = items_in_zone.length ? h(
             'div.counter',
             [
-                h('span',gettext('{seq}').replace('{seq}', 1))
-                
+                h('span', gettext('{seq}').replace('{seq}', 1))
+
             ],
-            
-        ): null
+
+        ) : null
         return (
             // h(
             //     'div',
             //     {
             //         className: 'className',
-                    
+
             //     },
             //     [
-                    
-            
+
+
             // h(
             //     'p',
             //     {
@@ -527,7 +519,7 @@ function DragAndDropTemplates(configuration) {
                         'role': 'button',
                         'aria-describedby': zone_description_id,
                         // 'sequence':parseInt(zone.uid.split('-')[1]),
-                        'sequence':0,
+                        'sequence': 0,
                     },
                     // style: modified_style ? modified_style :{
                     //     top: zone.y_percent + '%', left: zone.x_percent + "%",
@@ -537,14 +529,14 @@ function DragAndDropTemplates(configuration) {
                     //     top: zone.y_percent + '%', left: zone.x_percent + "%",
                     //     width: zone.width_percent + '%', height: (configuration.max_items_per_zone == 1) ? zone.height_percent + "%": items_in_zone.length? 74 + (items_in_zone.length*96)+'px':"74px",
                     // }
-                    style: (configuration.max_items_per_zone != 1)? null: {
+                    style: (configuration.max_items_per_zone != 1) ? null : {
                         top: zone.y_percent + '%', left: zone.x_percent + "%",
                         width: zone.width_percent + '%',
                     }
-                    
+
                 },
                 [
-                    h('div.nGroup',[
+                    h('div.nGroup', [
                         h(
                             'p',
                             {
@@ -556,7 +548,7 @@ function DragAndDropTemplates(configuration) {
                             ]
                         ),
                         // zoneCount,
-                    
+
                     ]),
                     // h(
                     //     'p',
@@ -569,17 +561,17 @@ function DragAndDropTemplates(configuration) {
                     //     ]
                     // ),
                     h('p', { className: 'zone-description sr' }, gettext(zone.description) || gettext('droppable')),
-                    
+
                     h(item_wrapper, renderCollection(itemTemplate, items_in_zone, ctx)),
                     h('p', { className: 'pick_drop-text' }, gettext('Pick and Drop')),
                     gettext(zone_description)
                 ]
             )
-            
+
         );
     };
 
-    var feedbackTemplate = function(ctx) {
+    var feedbackTemplate = function (ctx) {
         //         <span class="status ${'' if hide_correctness == True else status.classname}" id="status_${status_id}"
         //       data-tooltip="${'' if hide_correctness == True else status.display_tooltip}">
         // % endif
@@ -594,83 +586,83 @@ function DragAndDropTemplates(configuration) {
         //    % else:
         //       <span class="status-icon" aria-hidden="true"></span>
         //    %endif
-        
+
         //   % endif
         // </span>
         var messages = ctx.overall_feedback_messages || [];
         // var feedback_display = messages.length > 0 ? 'block' : 'none';
         var feedback_display = 'none';
         var feedback_messages = h();
-        if(messages.length){
+        if (messages.length) {
             var message = messages[0];
-            if(Object.keys(message).length){
+            if (Object.keys(message).length) {
 
-                if(message.message_class=='correct'){
+                if (message.message_class == 'correct') {
                     feedback_display = 'block';
-                    feedback_messages = h('span.status',{attributes:{'id':"status"}},[
-                        h('img',{attributes:{'src':'../../../../static/images/Vector.png'}}),
-                        h('span.crt',gettext('Correct'))
-                        
+                    feedback_messages = h('span.status', { attributes: { 'id': "status" } }, [
+                        h('img', { attributes: { 'src': '../../../../static/images/Vector.png' } }),
+                        h('span.crt', gettext('Correct'))
+
 
                     ]);
                 }
-                else if(message.message_class=='incorrect'){
+                else if (message.message_class == 'incorrect') {
                     feedback_display = 'block';
-                    feedback_messages = h('span.status',{attributes:{'id':"status"}},[
-                        h('img',{attributes:{'src':'../../../../static/images/Cross.png'}}),
-                        h('span.incrt',gettext('Incorrect'))
-                        
+                    feedback_messages = h('span.status', { attributes: { 'id': "status" } }, [
+                        h('img', { attributes: { 'src': '../../../../static/images/Cross.png' } }),
+                        h('span.incrt', gettext('Incorrect'))
+
 
                     ]);
-                    
+
                 }
-                console.log(message.message_class);
+
             }
         }
-        console.log(messages.length,messages[0],Object.keys(messages[0]).length);
-                        
+        
+
         // var feedback_messages = messages.map(function(message) {
-            
+
         //     if(message.message_class=='incorrect' || message.message_class=='correct')
         //     {
         //         if(message.message_class=='incorrect'){
         //             return h('span.status',{attributes:{'id':"status"}},[
         //                 h('img',{attributes:{'src':'../../../../static/images/Cross.png'}}),
         //                 h('span.incrt',gettext('Incorrect'))
-                        
+
 
         //             ]);
-                    
+
         //         }
 
         //         if(message.message_class=='correct'){
         //             return h('span.status',{attributes:{'id':"status"}},[
         //                 h('img',{attributes:{'src':'../../../../static/images/Vector.png'}}),
         //                 h('span.crt',gettext('Correct'))
-                        
+
 
         //             ]);
         //         }
 
         //     }
         //     return ;
-            // var selector = "p.message";
-            // if (message.message_class) {
-            //     selector += "."+message.message_class;
-            // }
-            // return h(selector, {innerHTML: gettext(message.message)}, []);
+        // var selector = "p.message";
+        // if (message.message_class) {
+        //     selector += "."+message.message_class;
+        // }
+        // return h(selector, {innerHTML: gettext(message.message)}, []);
         // });
 
-        var indicator_div = h('div.indicator-container',{},gettext(feedback_messages));
+        var indicator_div = h('div.indicator-container', {}, gettext(feedback_messages));
         // console.log(feedback_messages);
 
         return (
-            h('div.feedback', {attributes: {'role': 'group', 'aria-label': gettext('Feedback')}}, [
+            h('div.feedback', { attributes: { 'role': 'group', 'aria-label': gettext('Feedback') } }, [
                 h(
                     "div.feedback-content",
                     {},
                     [
-                        h('h3.title1', { style: { display: feedback_display } }, gettext('Feedback')),
+                        // h('h3.title1', { style: { display: feedback_display } }, gettext('Feedback')),
                         // h('div.messages', { style: { display: feedback_display } }, gettext(feedback_messages)),
                         h('div.messages', { style: { display: feedback_display } }, gettext(indicator_div)),
                     ]
@@ -679,18 +671,18 @@ function DragAndDropTemplates(configuration) {
         );
     };
 
-    var keyboardHelpPopupTemplate = function(ctx) {
-        var labelledby_id = 'modal-window-title-'+configuration.url_name;
+    var keyboardHelpPopupTemplate = function (ctx) {
+        var labelledby_id = 'modal-window-title-' + configuration.url_name;
         return (
             h('div.keyboard-help-dialog', [
                 h('div.modal-window-overlay'),
-                h('div.modal-window', {attributes: {role: 'dialog', 'aria-labelledby': labelledby_id, tabindex: -1}}, [
+                h('div.modal-window', { attributes: { role: 'dialog', 'aria-labelledby': labelledby_id, tabindex: -1 } }, [
                     h('button.modal-dismiss-button.unbutton', [
-                        h('span.fa.fa-remove', {attributes: {'aria-hidden': true}}),
+                        h('span.fa.fa-remove', { attributes: { 'aria-hidden': true } }),
                         h('span.sr', gettext('Close'))
                     ]),
                     h('div.modal-header', [
-                        h('h2.modal-window-title', {id: labelledby_id}, gettext('Keyboard Help'))
+                        h('h2.modal-window-title', { id: labelledby_id }, gettext('Keyboard Help'))
                     ]),
                     h('div.modal-content', [
                         h('p.sr', gettext('This is a screen reader-friendly problem.')),
@@ -709,7 +701,94 @@ function DragAndDropTemplates(configuration) {
         );
     };
 
-    var submitAnswerTemplate = function(ctx) {
+    var viewExplanationTemplate = function (ctx) {
+        //     <div>
+        //   <button class="view_explanation" id="view_explanation">View Explanation <img class="arrow-image" src='../../../../static/images/downarrow.png'></button>
+        //   <div class="explaination-card" style="display: none;">
+        //     % if status.display_name == 'incorrect':
+        //       <div class="correct_answer" id="correct_answer"></div>
+        //     % endif
+        //     <div class="explanations" id="explanations">
+        //       <h2>Explanation: </h2>
+        //     </div>
+        //   </div>
+        // </div>
+
+        var expSelecter = 'div.expalanation-block';
+        var exp_style = {};
+        exp_style.display = 'none';
+        var view_explanation_button_img = h('img.arrow-image', { src: '../../../../static/images/downarrow.png' });
+
+        var view_explanation_button = h('button.view_explanation',
+            { attributes: { 'id': 'view_explanation' } },
+            [
+                h('span', gettext('View Explanation')),
+                view_explanation_button_img
+            ]
+        );
+        var explainationCard = 'div.explaination-card';
+        
+
+        var msgs = ctx.feedback_messages || [];
+        var have_messages = msgs.length > 0;
+        var popup_content;
+
+        
+
+        if (ctx.mode == DragAndDropBlock.ASSESSMENT_MODE) {
+            var content_items = [
+                (!ctx.last_action_correct) ? h("p", {}, gettext("Some of your answers were not correct.")) : null,
+                h("p", {}, gettext("Hints:")),
+                h("ul", {}, msgs.map(function (message) {
+                    return h("li", { innerHTML: gettext(message.message) });
+                }))
+            ];
+            popup_content = h(
+                ctx.last_action_correct ? "div.popup-content" : "div.popup-content.popup-content-incorrect",
+                {},
+                have_messages ? content_items : []
+            );
+        } else {
+            popup_content = h(
+                ctx.last_action_correct ? "div.popup-content" : "div.popup-content.popup-content-incorrect",
+                {},
+                msgs.map(function (message) {
+                    return h("p", { innerHTML: gettext(message.message) });
+                })
+            );
+        }
+
+        var explanations = h('div.explanations', { attributes: { 'id': 'explanations' } },
+            [
+                h('h2', gettext('Explanation:')),
+                popup_content
+
+            ]);
+
+        return (
+            h(
+                expSelecter,
+                {
+                    style: exp_style
+
+                },
+                [
+                    view_explanation_button,
+                    h(
+                        explainationCard,
+                        {
+                            style: { display: 'none' }
+                        },
+                        [
+                            explanations
+                        ]
+                    ),
+                ]
+            )
+        );
+    }
+
+    var submitAnswerTemplate = function (ctx) {
         var submitButtonProperties = {
             disabled: ctx.disable_submit_button || ctx.submit_spinner,
             attributes: {}
@@ -722,13 +801,13 @@ function DragAndDropTemplates(configuration) {
             var attemptsUsedTemplate = gettext("You have used {used} of {total} attempts.");
             var attemptsUsedText = attemptsUsedTemplate.
                 replace("{used}", ctx.attempts).replace("{total}", ctx.max_attempts);
-            attemptsUsedInfo = h("span.attempts-used", {id: attemptsUsedId}, attemptsUsedText);
+            attemptsUsedInfo = h("span.attempts-used", { id: attemptsUsedId }, attemptsUsedText);
         }
 
         var submitSpinner = null;
         if (ctx.submit_spinner) {
             submitSpinner = h('span', [
-                h('span.fa.fa-spin.fa-spinner', {attributes: {'aria-hidden': true}}),
+                h('span.fa.fa-spin.fa-spinner', { attributes: { 'aria-hidden': true } }),
                 h('span.sr', gettext('Submitting'))
             ]);
         }
@@ -741,7 +820,7 @@ function DragAndDropTemplates(configuration) {
                     [
                         submitSpinner,
                         ' ',  // whitespace between spinner icon and text
-                        gettext("Submit")
+                        h('span.submit-label', gettext("Submit"))
                     ]
                 ),
                 attemptsUsedInfo
@@ -749,7 +828,7 @@ function DragAndDropTemplates(configuration) {
         );
     };
 
-    var sidebarButtonTemplate = function(buttonClass, iconClass, buttonText, options) {
+    var sidebarButtonTemplate = function (buttonClass, iconClass, buttonText, options) {
         options = options || {};
         if (options.spinner) {
             iconClass = 'fa-spin.fa-spinner';
@@ -763,7 +842,7 @@ function DragAndDropTemplates(configuration) {
                         disabled: options.disabled || options.spinner || false
                     },
                     [
-                        h("span.btn-icon.fa", {className: iconClass, attributes: {"aria-hidden": true}}),
+                        h("span.btn-icon.fa", { className: iconClass, attributes: { "aria-hidden": true } }),
                         buttonText
                     ]
                 )
@@ -771,7 +850,7 @@ function DragAndDropTemplates(configuration) {
         );
     };
 
-    var sidebarTemplate = function(ctx) {
+    var sidebarTemplate = function (ctx) {
         var showAnswerButton = null;
         if (ctx.show_show_answer) {
             var options = {
@@ -789,26 +868,26 @@ function DragAndDropTemplates(configuration) {
         if (!ctx.show_go_to_beginning_button) {
             go_to_beginning_button_class += ' sr';
         }
-        return(
+        return (
             h("div.action-toolbar-item.sidebar-buttons", {}, [
                 sidebarButtonTemplate(
                     go_to_beginning_button_class,
                     "fa-arrow-up",
                     gettext("Go to Beginning"),
-                    {disabled: ctx.disable_go_to_beginning_button}
+                    { disabled: ctx.disable_go_to_beginning_button }
                 ),
                 sidebarButtonTemplate(
                     "reset-button",
                     "fa-refresh",
                     gettext('Reset'),
-                    {disabled: ctx.disable_reset_button}
+                    { disabled: ctx.disable_reset_button }
                 ),
-                showAnswerButton,
+                // showAnswerButton,
             ])
         )
     };
 
-    var itemFeedbackPopupTemplate = function(ctx) {
+    var itemFeedbackPopupTemplate = function (ctx) {
         var popupSelector = 'div.popup.item-feedback-popup.popup-wrapper';
         var msgs = ctx.feedback_messages || [];
         var have_messages = msgs.length > 0;
@@ -822,8 +901,8 @@ function DragAndDropTemplates(configuration) {
             var content_items = [
                 (!ctx.last_action_correct) ? h("p", {}, gettext("Some of your answers were not correct.")) : null,
                 h("p", {}, gettext("Hints:")),
-                h("ul", {}, msgs.map(function(message) {
-                    return h("li", {innerHTML: gettext(message.message)});
+                h("ul", {}, msgs.map(function (message) {
+                    return h("li", { innerHTML: gettext(message.message) });
                 }))
             ];
             popup_content = h(
@@ -835,8 +914,8 @@ function DragAndDropTemplates(configuration) {
             popup_content = h(
                 ctx.last_action_correct ? "div.popup-content" : "div.popup-content.popup-content-incorrect",
                 {},
-                msgs.map(function(message) {
-                    return h("p", {innerHTML: gettext(message.message)});
+                msgs.map(function (message) {
+                    return h("p", { innerHTML: gettext(message.message) });
                 })
             );
         }
@@ -912,13 +991,13 @@ function DragAndDropTemplates(configuration) {
         )
     };
 
-    var forwardKeyboardHelpButtonTemplate = function(ctx) {
+    var forwardKeyboardHelpButtonTemplate = function (ctx) {
         return h(
             'button.unbutton.btn-link.keyboard-help-button',
             [
                 h(
                     "span.btn-icon.fa.fa-keyboard-o",
-                    {attributes: {"aria-hidden": true}}
+                    { attributes: { "aria-hidden": true } }
                 ),
                 // appending space is the simplest way to avoid sticking text to the button, but also to have
                 // them underlined together on hover. When margin was used there was a gap in underlining
@@ -928,10 +1007,10 @@ function DragAndDropTemplates(configuration) {
         );
     };
 
-    var progressTemplate = function(ctx) {
+    var progressTemplate = function (ctx) {
         // Formats a number to 4 decimals without trailing zeros
         // (1.00 -> '1'; 1.50 -> '1.5'; 1.333333333 -> '1.3333').
-        var formatNumber = function(n) { return n.toFixed(4).replace(/\.?0+$/, ''); };
+        var formatNumber = function (n) { return n.toFixed(4).replace(/\.?0+$/, ''); };
         var is_graded = ctx.graded && ctx.weighted_max_score > 0;
         var progress_template;
         if (ctx.grade !== null && ctx.weighted_max_score > 0) {
@@ -971,12 +1050,12 @@ function DragAndDropTemplates(configuration) {
         var progress_text = progress_template.replace('{possible}', formatNumber(ctx.weighted_max_score));
         return h('div.problem-progress', {
             id: configuration.url_name + '-problem-progress',
-            attributes: {role: 'status'}
+            attributes: { role: 'status' }
         }, progress_text);
     };
 
-    var mainTemplate = function(ctx) {
-        var main_element_properties = {attributes: {role: 'group'}};
+    var mainTemplate = function (ctx) {
+        var main_element_properties = { attributes: { role: 'group' } };
         var problemProgress = progressTemplate(ctx);
         var problemTitle = null;
         if (ctx.show_title) {
@@ -984,17 +1063,17 @@ function DragAndDropTemplates(configuration) {
             problemTitle = h('h3.problem-title', {
                 id: problem_title_id,
                 innerHTML: gettext(ctx.title_html),
-                attributes: {'aria-describedby': problemProgress.properties.id},
+                attributes: { 'aria-describedby': problemProgress.properties.id },
                 style: {
-                        'font-family': 'Roc Grotesk',
-                        'font-style': 'normal',
-                        'font-weight': 700,
-                        'font-size': '14px',
-                        'line-height': '100%',
-                        'letter-spacing': '0.03em',
-                        'text-transform': 'uppercase',
-                        
-                    }
+                    'font-family': 'Roc Grotesk',
+                    'font-style': 'normal',
+                    'font-weight': 700,
+                    'font-size': '14px',
+                    'line-height': '100%',
+                    'letter-spacing': '0.03em',
+                    'text-transform': 'uppercase',
+
+                }
             });
             main_element_properties.attributes['arial-labelledby'] = problem_title_id;
         } else {
@@ -1006,7 +1085,7 @@ function DragAndDropTemplates(configuration) {
         var items_in_bank = [];
         var items_dragged = [];
         var items_placed = [];
-        ctx.items.forEach(function(item) {
+        ctx.items.forEach(function (item) {
             if (item.is_dragged) {
                 items_dragged.push(item);
                 // Dragged items require a placeholder in the bank.
@@ -1038,34 +1117,33 @@ function DragAndDropTemplates(configuration) {
         // rendered as a placeholder. All already placed items should also be rendered as
         // placedholders (as the last content in the bank) to maintain original bank dimensions.
         var bank_children = [];
-        items_in_bank.forEach(function(item) {
+        items_in_bank.forEach(function (item) {
             if (item.is_dragged) {
                 bank_children.push(itemPlaceholderTemplate(item, ctx));
             } else {
                 bank_children.push(itemTemplate(item, ctx));
             }
         });
-        
+
         bank_children = bank_children.concat(renderCollection(itemPlaceholderTemplate, items_placed, ctx));
         var new_bank_children = [];
-        bank_children.forEach(function(item, out_count) {
-                            
-            bank_children.forEach(function(item, in_count) {
+        bank_children.forEach(function (item, out_count) {
+
+            bank_children.forEach(function (item, in_count) {
                 let key_str = item.key;
                 let key_arr = key_str.split('-');
                 let key = -1;
-                if(key_arr[0]=='placeholder'){
+                if (key_arr[0] == 'placeholder') {
                     key = parseInt(key_arr[1]);
                 }
-                else{
+                else {
                     key = parseInt(key_arr[0]);
                 }
-                            
-                if(out_count===key)
-                {
+
+                if (out_count === key) {
                     new_bank_children.push(item)
                 }
-                           
+
             });
         });
         var drag_container_style = {};
@@ -1075,55 +1153,55 @@ function DragAndDropTemplates(configuration) {
         // image to 100%, so that it doesn't expand the container.
         if (ctx.drag_container_max_width === null) {
             target_img_style.maxWidth = '100%';
-            item_bank_properties.style = {display: 'none'};
+            item_bank_properties.style = { display: 'none' };
         } else {
             drag_container_style.maxWidth = ctx.drag_container_max_width + 'px';
         }
 
-        if(configuration.max_items_per_zone==1 && new_bank_children.length)
-        {
-            var column1 = h('h5.column',gettext('column 1'));
+        if (configuration.max_items_per_zone == 1 && new_bank_children.length) {
+            var column1 = h('h5.column', gettext('column 1'));
             new_bank_children.unshift(column1);
             bank_children = new_bank_children;
         }
 
-        else{
+        else {
             bank_children = new_bank_children;
         }
 
         return (
             h('div.themed-xblock.xblock--drag-and-drop', main_element_properties, [
                 h('object.resize-detector', {
-                    attributes: {type: 'text/html', tabindex: -1, data: 'about:blank'}
+                    attributes: { type: 'text/html', tabindex: -1, data: 'about:blank' }
                 }),
                 gettext(problemTitle),
                 // gettext(problemProgress),
                 // h('div', [forwardKeyboardHelpButtonTemplate(ctx)]),
                 h('div.i-image', {
-                    id:'i-image'
+                    id: 'i-image'
                 }, [
-                    h('img',{
-                        attributes: {src: '/static/edx-theme/images/i-image.png', tabindex: 1}
+                    h('img', {
+                        attributes: { src: '/static/edx-theme/images/i-image.png', tabindex: 1 }
                     })
                 ]),
                 h('div.problem', [
                     problemHeader,
-                    h('p', {innerHTML: ctx.problem_html,
-                            style:{
-                                'font-family': 'DM Sans',
-                                'font-style': 'normal',
-                                'font-weight': '400',
-                                'font-size': '16px',
-                                'margin-bottom': '5px'
-                            }
-                        }),
+                    h('p', {
+                        innerHTML: ctx.problem_html,
+                        style: {
+                            'font-family': 'DM Sans',
+                            'font-style': 'normal',
+                            'font-weight': '400',
+                            'font-size': '16px',
+                            'margin-bottom': '5px'
+                        }
+                    }),
                 ]),
-                h('div.drag-container', {style: drag_container_style}, [
+                h('div.drag-container', { style: drag_container_style }, [
                     h('div.item-bank', item_bank_properties, bank_children),
-                    h('div.target', {attributes: {'role': 'group', 'arial-label': gettext('Drop Targets')}}, [
-                        (configuration.max_items_per_zone==1)?
-                        h('h5.column',gettext('column 2')):null,
-                        itemFeedbackPopupTemplate(ctx),
+                    h('div.target', { attributes: { 'role': 'group', 'arial-label': gettext('Drop Targets') } }, [
+                        (configuration.max_items_per_zone == 1) ?
+                            h('h5.column', gettext('column 2')) : null,
+                        // itemFeedbackPopupTemplate(ctx),
                         h('div.target-img-wrapper', [
                             // (configuration.max_items_per_zone==1)?null:
                             // h('img.target-img', {
@@ -1136,14 +1214,16 @@ function DragAndDropTemplates(configuration) {
                     ]),
                     h('div.dragged-items', renderCollection(itemTemplate, items_dragged, ctx)),
                 ]),
-                h("div.actions-toolbar", {attributes: {'role': 'group', 'aria-label': gettext('Actions')}}, [
+                feedbackTemplate(ctx),
+                viewExplanationTemplate(ctx),
+                h("div.actions-toolbar", { attributes: { 'role': 'group', 'aria-label': gettext('Actions') } }, [
                     (ctx.show_submit_answer ? submitAnswerTemplate(ctx) : null),
                     sidebarTemplate(ctx),
                 ]),
                 keyboardHelpPopupTemplate(ctx),
-                feedbackTemplate(ctx),
+
                 h('div.sr.reader-feedback-area', {
-                    attributes: {'aria-live': 'polite', 'aria-atomic': true},
+                    attributes: { 'aria-live': 'polite', 'aria-atomic': true },
                     innerHTML: ctx.screen_reader_messages
                 }),
             ])
@@ -1173,7 +1253,7 @@ function DragAndDropBlock(runtime, element, configuration) {
     }
     if (typeof gettext == "undefined") {
         // No translations -- used by test environment
-        gettext = function(string) { return string; };
+        gettext = function (string) { return string; };
     }
 
     var renderView = DragAndDropTemplates(configuration);
@@ -1209,7 +1289,7 @@ function DragAndDropBlock(runtime, element, configuration) {
 
     var $selectedItem;
 
-    var init = function() {
+    var init = function () {
         // Load the current user state, and load the image, then render the block.
         // We load the user state via AJAX rather than passing it in statically (like we do with
         // configuration) due to how the LMS handles unit tabs. If you click on a unit with this
@@ -1217,9 +1297,9 @@ function DragAndDropBlock(runtime, element, configuration) {
         // would re-initialize with the old state. To avoid that, we always fetch the state
         // using AJAX during initialization.
         $.when(
-            $.ajax(runtime.handlerUrl(element, 'student_view_user_state'), {dataType: 'json'}),
+            $.ajax(runtime.handlerUrl(element, 'student_view_user_state'), { dataType: 'json' }),
             loadBackgroundImage()
-        ).done(function(stateResult, bgImg){
+        ).done(function (stateResult, bgImg) {
             // Render problem
             configuration.zones.forEach(function (zone) {
                 computeZoneDimension(zone, bgImg.width, bgImg.height);
@@ -1237,16 +1317,17 @@ function DragAndDropBlock(runtime, element, configuration) {
             $element.on('keyup', '.item-feedback-popup .close-feedback-popup-button', preventFauxPopupCloseButtonClick);
 
             $element.on('click', '.submit-answer-button', doAttempt);
+            $element.on('click', '.view_explanation', explainToggle);
             $element.on('click', '.keyboard-help-button', showKeyboardHelp);
-            $element.on('keydown', '.keyboard-help-button', function(evt) {
+            $element.on('keydown', '.keyboard-help-button', function (evt) {
                 runOnKey(evt, RET, showKeyboardHelp);
             });
             $element.on('click', '.reset-button', resetProblem);
-            $element.on('keydown', '.reset-button', function(evt) {
+            $element.on('keydown', '.reset-button', function (evt) {
                 runOnKey(evt, RET, resetProblem);
             });
             $element.on('click', '.show-answer-button', showAnswer);
-            $element.on('keydown', '.show-answer-button', function(evt) {
+            $element.on('keydown', '.show-answer-button', function (evt) {
                 runOnKey(evt, RET, showAnswer);
             });
 
@@ -1257,7 +1338,7 @@ function DragAndDropBlock(runtime, element, configuration) {
             // since in some browser/OS combinations some other keyboard button presses (for example space bar)
             // are also treated as clicks,
             $element.on('mousedown click', '.go-to-beginning-button', onGoToBeginningButtonClick);
-            $element.on('keydown', '.go-to-beginning-button', function(evt) {
+            $element.on('keydown', '.go-to-beginning-button', function (evt) {
                 runOnKey(evt, RET, onGoToBeginningButtonClick);
             });
             // Go to Beginning button should only be visible when it has focus.
@@ -1284,8 +1365,8 @@ function DragAndDropBlock(runtime, element, configuration) {
             initDroppable();
 
             // Indicate that problem is done loading
-            publishEvent({event_type: 'edx.drag_and_drop_v2.loaded'});
-        }).fail(function() {
+            publishEvent({ event_type: 'edx.drag_and_drop_v2.loaded' });
+        }).fail(function () {
             $root.text(gettext("An error occurred. Unable to load drag and drop problem."));
         });
     };
@@ -1294,9 +1375,9 @@ function DragAndDropBlock(runtime, element, configuration) {
     var last_width = 0;
     var last_height = 0;
     var raf_id = null;
-    var handleResizeEvent = function(watchedObject) {
+    var handleResizeEvent = function (watchedObject) {
         cancelAnimationFrame(raf_id);
-        raf_id = requestAnimationFrame(function() {
+        raf_id = requestAnimationFrame(function () {
             var new_width = watchedObject.width();
             var new_height = watchedObject.height();
             if (last_width !== new_width || last_height !== new_height) {
@@ -1311,7 +1392,7 @@ function DragAndDropBlock(runtime, element, configuration) {
     // and fit to the edges of the container, so that its size always equals the container size.
     // This hack is needed because not all browsers support native 'resize' events on arbitrary
     // DOM elements.
-    var bindContainerResize = function(evt) {
+    var bindContainerResize = function (evt) {
         var object = evt.target;
         var $object = $(object);
         if ($object.is('.resize-detector')) {
@@ -1327,7 +1408,7 @@ function DragAndDropBlock(runtime, element, configuration) {
         }
     };
 
-    var measureWidthAndRender = function() {
+    var measureWidthAndRender = function () {
         // First set containerMaxWidth to null to hide the container.
         containerMaxWidth = null;
         // Render with container hidden to be able to measure max available width.
@@ -1338,7 +1419,7 @@ function DragAndDropBlock(runtime, element, configuration) {
         applyState();
     };
 
-    var checkForFixedHeader = function() {
+    var checkForFixedHeader = function () {
         // There might be a fixed header covering the upper part of the screen,
         // which needs to be taken into account when scrolling while dragging.
         var windowHeight = $(window).height();
@@ -1356,13 +1437,13 @@ function DragAndDropBlock(runtime, element, configuration) {
         }
     }
 
-    var runOnKey = function(evt, key, handler) {
+    var runOnKey = function (evt, key, handler) {
         if (evt.which === key) {
             handler(evt);
         }
     };
 
-    var keyboardEventDispatcher = function(evt, focusId) {
+    var keyboardEventDispatcher = function (evt, focusId) {
         if (evt.which === TAB) {
             trapFocus(evt);
         } else if (evt.which === ESC) {
@@ -1370,14 +1451,14 @@ function DragAndDropBlock(runtime, element, configuration) {
         }
     };
 
-    var trapFocus = function(evt) {
+    var trapFocus = function (evt) {
         if (evt.which === TAB) {
             evt.preventDefault();
             focusModalButton();
         }
     };
 
-    var truncateField = function(data, fieldName){
+    var truncateField = function (data, fieldName) {
         if (data[fieldName].length > MAX_LENGTH) {
             data[fieldName] = data[fieldName].substring(0, MAX_LENGTH);
             data['truncated'] = true;
@@ -1386,7 +1467,7 @@ function DragAndDropBlock(runtime, element, configuration) {
         }
     };
 
-    var onGoToBeginningButtonClick = function(evt) {
+    var onGoToBeginningButtonClick = function (evt) {
         evt.preventDefault();
         // In theory the blur event handler should hide the button,
         // but the blur event does not fire consistently in all browsers,
@@ -1396,14 +1477,14 @@ function DragAndDropBlock(runtime, element, configuration) {
         focusFirstDraggable();
     };
 
-    var showGoToBeginningButton = function() {
+    var showGoToBeginningButton = function () {
         if (!state.go_to_beginning_button_visible) {
             state.go_to_beginning_button_visible = true;
             applyState();
         }
     };
 
-    var hideGoToBeginningButton = function() {
+    var hideGoToBeginningButton = function () {
         if (state.go_to_beginning_button_visible) {
             state.go_to_beginning_button_visible = false;
             applyState();
@@ -1418,7 +1499,7 @@ function DragAndDropBlock(runtime, element, configuration) {
     // a click event on keyup if the close button received a keydown event prior to the keyup.
     var _popup_close_button_keydown_received = false;
 
-    var closePopupKeydownHandler = function(evt) {
+    var closePopupKeydownHandler = function (evt) {
         _popup_close_button_keydown_received = true;
         // Don't let user tab out of the button until the feedback is closed.
         if (evt.which === TAB) {
@@ -1426,7 +1507,7 @@ function DragAndDropBlock(runtime, element, configuration) {
         }
     };
 
-    var preventFauxPopupCloseButtonClick = function(evt) {
+    var preventFauxPopupCloseButtonClick = function (evt) {
         if (_popup_close_button_keydown_received) {
             // The close button received a keydown event prior to this keyup,
             // so this event is genuine.
@@ -1439,11 +1520,11 @@ function DragAndDropBlock(runtime, element, configuration) {
         }
     };
 
-    var focusModalButton = function() {
+    var focusModalButton = function () {
         $root.find('.keyboard-help-dialog .modal-dismiss-button').focus();
     };
 
-    var showKeyboardHelp = function(evt) {
+    var showKeyboardHelp = function (evt) {
         var focusId = document.activeElement;
         evt.preventDefault();
 
@@ -1453,16 +1534,16 @@ function DragAndDropBlock(runtime, element, configuration) {
         $keyboardHelpDialog.find('.modal-window').show().focus();
 
         // Set up event handlers
-        $(document).on('keydown.keyboard-help', function(evt) {
+        $(document).on('keydown.keyboard-help', function (evt) {
             keyboardEventDispatcher(evt, focusId);
         });
 
-        $keyboardHelpDialog.find('.modal-dismiss-button').on('click', function(evt) {
+        $keyboardHelpDialog.find('.modal-dismiss-button').on('click', function (evt) {
             hideKeyboardHelp(evt, focusId)
         });
     };
 
-    var hideKeyboardHelp = function(evt, focusId) {
+    var hideKeyboardHelp = function (evt, focusId) {
         evt.preventDefault();
 
         // Hide dialog
@@ -1479,10 +1560,10 @@ function DragAndDropBlock(runtime, element, configuration) {
     };
 
     /** Asynchronously load the main background image used for this block. */
-    var loadBackgroundImage = function() {
+    var loadBackgroundImage = function () {
         var promise = $.Deferred();
         var img = new Image();
-        img.addEventListener("load", function() {
+        img.addEventListener("load", function () {
             if (img.width == 0 || img.height == 0) {
                 // Workaround for IE11 issue with SVG images
                 document.body.appendChild(img);
@@ -1497,14 +1578,14 @@ function DragAndDropBlock(runtime, element, configuration) {
                 promise.reject();
             }
         }, false);
-        img.addEventListener("error", function() { promise.reject(); });
+        img.addEventListener("error", function () { promise.reject(); });
         img.src = configuration.target_img_expanded_url;
         img.alt = configuration.target_img_description;
         return promise;
     };
 
     /** Zones are specified in the configuration via pixel values - convert to percentages */
-    var computeZoneDimension = function(zone, bg_image_width, bg_image_height) {
+    var computeZoneDimension = function (zone, bg_image_width, bg_image_height) {
         if (zone.x_percent === undefined) {
             // We can assume that if 'x_percent' is not set, 'y_percent', 'width_percent', and
             // 'height_percent' will also not be set.
@@ -1538,14 +1619,14 @@ function DragAndDropBlock(runtime, element, configuration) {
      * This workaround simply detects the image width when any image loads, then sets the width
      * on the [grand]parent element, resolving the ambiguity.
      */
-    var webkitFix = function(event) {
+    var webkitFix = function (event) {
         var $img = $(event.target);
         var $option = $img.parent().parent();
         if (!$option.is('.option')) {
             return;
         }
         var itemId = $option.data('value');
-        configuration.items.forEach(function(item) {
+        configuration.items.forEach(function (item) {
             if (item.id == itemId) {
                 item.imgNaturalWidth = event.target.naturalWidth;
             }
@@ -1558,12 +1639,12 @@ function DragAndDropBlock(runtime, element, configuration) {
     /**
      * Update the DOM to reflect 'state'.
      */
-    var applyState = function() {
+    var applyState = function () {
         sendFeedbackPopupEvents();
         updateDOM();
     };
 
-    var sendFeedbackPopupEvents = function() {
+    var sendFeedbackPopupEvents = function () {
         // Has the feedback popup been closed?
         if (state.closing) {
             var data = {
@@ -1588,10 +1669,10 @@ function DragAndDropBlock(runtime, element, configuration) {
     };
 
     var concatenateFeedback = function (feedback_msgs_list) {
-        return feedback_msgs_list.map(function(message) { return message.message; }).join('\n');
+        return feedback_msgs_list.map(function (message) { return message.message; }).join('\n');
     };
 
-    var updateDOM = function() {
+    var updateDOM = function () {
         var new_vdom = render(state);
         var patches = virtualDom.diff(__vdom, new_vdom);
         root = virtualDom.patch(root, patches);
@@ -1601,11 +1682,11 @@ function DragAndDropBlock(runtime, element, configuration) {
 
     var sr_clear_timeout = null;
 
-    var setScreenReaderMessages = function() {
+    var setScreenReaderMessages = function () {
         clearTimeout(sr_clear_timeout);
 
-        var pluckMessages = function(feedback_items) {
-            return feedback_items.map(function(item) {
+        var pluckMessages = function (feedback_items) {
+            return feedback_items.map(function (item) {
                 return item.message;
             });
         };
@@ -1629,7 +1710,7 @@ function DragAndDropBlock(runtime, element, configuration) {
                 );
             }
         }
-        var paragraphs = messages.map(function(msg) {
+        var paragraphs = messages.map(function (msg) {
             return '<p>' + msg + '</p>';
         });
 
@@ -1639,12 +1720,12 @@ function DragAndDropBlock(runtime, element, configuration) {
         // next time the user performs an action, even if next feedback message did not change from
         // last attempt (for example: if user drops the same item on two wrong zones one after another,
         // the negative feedback should be read out twice, not only on first drop).
-        sr_clear_timeout = setTimeout(function() {
+        sr_clear_timeout = setTimeout(function () {
             state.screen_reader_messages = '';
         }, 250);
     };
 
-    var publishEvent = function(data) {
+    var publishEvent = function (data) {
         $.ajax({
             type: 'POST',
             url: runtime.handlerUrl(element, 'publish_event'),
@@ -1652,29 +1733,29 @@ function DragAndDropBlock(runtime, element, configuration) {
         });
     };
 
-    var isCycleKey = function(evt) {
+    var isCycleKey = function (evt) {
         return !evt.ctrlKey && !evt.metaKey && evt.which === TAB;
     };
 
-    var isCancelKey = function(evt) {
-        return !evt.ctrlKey && !evt.metaKey  && evt.which === ESC;
+    var isCancelKey = function (evt) {
+        return !evt.ctrlKey && !evt.metaKey && evt.which === ESC;
     };
 
-    var isActionKey = function(evt) {
+    var isActionKey = function (evt) {
         return evt.which == RET || (evt.ctrlKey && evt.which == M);
     };
 
-    var isSpaceKey = function(evt) {
+    var isSpaceKey = function (evt) {
         var key = evt.which;
         return key === SPC;
     };
 
-    var isTabKey = function(evt) {
+    var isTabKey = function (evt) {
         var key = evt.which;
         return key === TAB;
     };
 
-    var focusNextZone = function(evt, $currentZone) {
+    var focusNextZone = function (evt, $currentZone) {
         var zones = $root.find('.target .zone').toArray();
         // In assessment mode, item bank is a valid drop zone
         if (configuration.mode === DragAndDropBlock.ASSESSMENT_MODE) {
@@ -1696,15 +1777,15 @@ function DragAndDropBlock(runtime, element, configuration) {
         zones[idx].focus();
     };
 
-    var focusGoToBeginningButton = function() {
+    var focusGoToBeginningButton = function () {
         $root.find('.go-to-beginning-button').focus();
     };
 
-    var focusFirstDraggable = function() {
+    var focusFirstDraggable = function () {
         $root.find('.item-bank .option').first().focus();
     };
 
-    var focusItemFeedbackPopup = function() {
+    var focusItemFeedbackPopup = function () {
         var popup = $root.find('.item-feedback-popup');
         if (popup.length && popup.is(":visible")) {
             popup.find('.close-feedback-popup-button:visible').focus();
@@ -1713,7 +1794,7 @@ function DragAndDropBlock(runtime, element, configuration) {
         return false;
     };
 
-    var returnItemToBank = function(item_id) {
+    var returnItemToBank = function (item_id) {
         if (!state.items[item_id]) {
             // Nothing to do here, item is already in the bank.
             return;
@@ -1721,11 +1802,11 @@ function DragAndDropBlock(runtime, element, configuration) {
         delete state.items[item_id];
         applyState();
         var url = runtime.handlerUrl(element, 'drop_item');
-        var data = {val: item_id, zone: null};
+        var data = { val: item_id, zone: null };
         $.post(url, JSON.stringify(data), 'json');
     };
 
-    var placeGrabbedItem = function($zone) {
+    var placeGrabbedItem = function ($zone) {
         var zone = String($zone.data('uid'));
         var zone_align = $zone.data('zone_align');
         var items = configuration.items;
@@ -1746,7 +1827,7 @@ function DragAndDropBlock(runtime, element, configuration) {
         var items_in_zone_count = countItemsInZone(zone, [item_id.toString()]);
         if (configuration.max_items_per_zone && configuration.max_items_per_zone <= items_in_zone_count) {
             state.last_action_correct = false;
-            state.feedback = [{message: gettext("You cannot add any more items to this zone."), message_class: null}];
+            state.feedback = [{ message: gettext("You cannot add any more items to this zone."), message_class: null }];
             applyState();
             return;
         }
@@ -1761,21 +1842,21 @@ function DragAndDropBlock(runtime, element, configuration) {
         submitLocation(item_id, zone);
     };
 
-    var countItemsInZone = function(zone, exclude_ids) {
+    var countItemsInZone = function (zone, exclude_ids) {
         var ids_to_exclude = exclude_ids ? exclude_ids : [];
-        return Object.keys(state.items).filter(function(item_id) {
+        return Object.keys(state.items).filter(function (item_id) {
             return state.items[item_id].zone === zone && $.inArray(item_id, ids_to_exclude) === -1;
         }).length;
     };
 
-    var canGoToBeginning = function() {
+    var canGoToBeginning = function () {
         var all_items_placed = configuration.items.length === Object.keys(state.items).length;
         return !all_items_placed && !state.finished;
     };
 
-    var initDroppable = function() {
+    var initDroppable = function () {
         // Set up zones for keyboard interaction
-        $root.on('keydown', '.zone, .item-bank', function(evt) {
+        $root.on('keydown', '.zone, .item-bank', function (evt) {
             var $zone = $(this);
             if (state.keyboard_placement_mode) {
                 if (isCycleKey(evt)) {
@@ -1810,12 +1891,12 @@ function DragAndDropBlock(runtime, element, configuration) {
             }
         });
 
-        $root.on('blur', '.zone, .item-bank', function(evt) {
+        $root.on('blur', '.zone, .item-bank', function (evt) {
             delete state.tab_to_go_to_beginning_button;
         });
     };
 
-    var getItemById = function(item_id) {
+    var getItemById = function (item_id) {
         for (var i = 0; i < configuration.items.length; i++) {
             if (configuration.items[i].id === item_id) {
                 return configuration.items[i];
@@ -1823,11 +1904,11 @@ function DragAndDropBlock(runtime, element, configuration) {
         }
     };
 
-    var initDraggable = function() {
+    var initDraggable = function () {
         var $container = $root.find('.drag-container');
 
         // Allow items to be "picked up" using the keyboard
-        $container.on('keydown', '.option[draggable=true]', function(evt) {
+        $container.on('keydown', '.option[draggable=true]', function (evt) {
             if (isActionKey(evt)) {
                 var $item = $(this);
                 evt.preventDefault();
@@ -1840,7 +1921,7 @@ function DragAndDropBlock(runtime, element, configuration) {
         });
 
         // Helper functions that return pageX/pageY from either touch or mouse events.
-        var pageX = function(evt) {
+        var pageX = function (evt) {
             if (evt.type === 'touchstart' || evt.type === 'touchmove') {
                 return evt.originalEvent.targetTouches[0].pageX;
             } else {
@@ -1848,7 +1929,7 @@ function DragAndDropBlock(runtime, element, configuration) {
             }
         };
 
-        var pageY = function(evt) {
+        var pageY = function (evt) {
             if (evt.type === 'touchstart' || evt.type === 'touchmove') {
                 return evt.originalEvent.targetTouches[0].pageY;
             } else {
@@ -1856,7 +1937,7 @@ function DragAndDropBlock(runtime, element, configuration) {
             }
         };
 
-        var isValidDropTarget = function(element) {
+        var isValidDropTarget = function (element) {
             var valid = element.classList.contains('zone');
             if (!valid && configuration.mode === DragAndDropBlock.ASSESSMENT_MODE) {
                 // In assessment mode, items can be dropped back into the item bank.
@@ -1866,7 +1947,7 @@ function DragAndDropBlock(runtime, element, configuration) {
         };
 
         // If the drag ended on a valid target zone, returns the zone, otherwise returns null;
-        var getTargetZone = function(evt) {
+        var getTargetZone = function (evt) {
             var $zone = null;
             var x, y;
             if (evt.type === 'mouseup') {
@@ -1893,7 +1974,7 @@ function DragAndDropBlock(runtime, element, configuration) {
             return $zone;
         };
 
-        var onDragStart = function(interaction_type, $item, drag_origin) {
+        var onDragStart = function (interaction_type, $item, drag_origin) {
             var item_id = $item.data('value');
             var item = getItemById(item_id);
             var $document = $(document);
@@ -1917,11 +1998,11 @@ function DragAndDropBlock(runtime, element, configuration) {
             grabItem($item, 'mouse');
 
             // Animate the item back to its original position in the bank.
-            var revertDrag = function() {
+            var revertDrag = function () {
                 var revert_duration = 150;
                 var start_position = item.drag_position;
                 var start_ts = null;
-                var step = function(ts) {
+                var step = function (ts) {
                     if (!start_ts) {
                         start_ts = ts;
                     }
@@ -1942,12 +2023,12 @@ function DragAndDropBlock(runtime, element, configuration) {
             };
 
             var raf_id = null;
-            var onDragMove = function(evt) {
+            var onDragMove = function (evt) {
                 evt.preventDefault();
                 if (raf_id) {
                     cancelAnimationFrame(raf_id);
                 }
-                raf_id = requestAnimationFrame(function() {
+                raf_id = requestAnimationFrame(function () {
                     var x = pageX(evt);
                     var y = pageY(evt);
 
@@ -1990,20 +2071,20 @@ function DragAndDropBlock(runtime, element, configuration) {
 
                     if (typeof item.max_left === 'undefined') {
                         var $draggedItem = $container.find('.option[data-value=' + item_id + ']');
-                        item.max_left =  container_width - $draggedItem.outerWidth();
+                        item.max_left = container_width - $draggedItem.outerWidth();
                         item.max_top = container_height - $draggedItem.outerHeight();
                     }
                     var left = original_position.left + dx;
                     var top = original_position.top + dy;
                     left = Math.max(0, Math.min(item.max_left, left));
                     top = Math.max(0, Math.min(item.max_top, top));
-                    item.drag_position = {left: left, top: top};;
+                    item.drag_position = { left: left, top: top };;
                     applyState();
                     raf_id = null;
                 });
             };
 
-            var onDragEnd = function(evt) {
+            var onDragEnd = function (evt) {
                 if (raf_id) {
                     cancelAnimationFrame(raf_id);
                 }
@@ -2057,11 +2138,11 @@ function DragAndDropBlock(runtime, element, configuration) {
         var handled_by_touch = false;
 
         // Mousedown events should start the drag immediately.
-        $container.on('mousedown', '.option[draggable=true]', function(evt) {
+        $container.on('mousedown', '.option[draggable=true]', function (evt) {
             if (!handled_by_touch) {
                 evt.preventDefault();
                 var $item = $(this);
-                var drag_origin = {x: pageX(evt), y: pageY(evt)};
+                var drag_origin = { x: pageX(evt), y: pageY(evt) };
                 onDragStart('mouse', $(this), drag_origin);
             }
         });
@@ -2070,23 +2151,23 @@ function DragAndDropBlock(runtime, element, configuration) {
         // If the user starts moving the finger during the timeout, the drag should be cancelled.
         // This allows users to scroll the item bank with their finger without accidentally starting
         // to drag items.
-        $container.on('touchstart', '.option[draggable=true]', function(evt) {
+        $container.on('touchstart', '.option[draggable=true]', function (evt) {
             handled_by_touch = true;
             var $item = $(this);
-            var drag_origin = {x: pageX(evt), y: pageY(evt)};
+            var drag_origin = { x: pageX(evt), y: pageY(evt) };
             var timeout_id = null;
-            var cancelDrag = function() {
+            var cancelDrag = function () {
                 clearTimeout(timeout_id);
                 // We need to reset the handled_by_touch in a timeout,
                 // so that it happens after the potentially emulated mousedown event.
-                setTimeout(function() {
+                setTimeout(function () {
                     handled_by_touch = false;
                 }, 0);
             };
 
             $item.one('touchmove touchend touchcancel', cancelDrag);
 
-            timeout_id = setTimeout(function() {
+            timeout_id = setTimeout(function () {
                 handled_by_touch = false;
                 $item.off('touchmove touchend touchcancel', cancelDrag);
                 onDragStart('touch', $item, drag_origin);
@@ -2094,19 +2175,19 @@ function DragAndDropBlock(runtime, element, configuration) {
         });
 
         // Prevent long tap on draggable items from causing the context menu to pop up on android.
-        $container.on('contextmenu', '.option[draggable=true]', function(evt) {
+        $container.on('contextmenu', '.option[draggable=true]', function (evt) {
             evt.preventDefault();
         });
 
         // Prevent touchmove events fired on the dragged item causing scroll.
-        $container.on('touchmove', '.dragged-items .options[draggable=true]', function(evt) {
+        $container.on('touchmove', '.dragged-items .options[draggable=true]', function (evt) {
             evt.preventDefault();
         });
     };
 
-    var grabItem = function($item, interaction_type) {
+    var grabItem = function ($item, interaction_type) {
         var item_id = $item.data('value');
-        configuration.items.forEach(function(item) {
+        configuration.items.forEach(function (item) {
             if (item.id === item_id) {
                 item.grabbed = true;
                 item.grabbed_with = interaction_type;
@@ -2119,15 +2200,15 @@ function DragAndDropBlock(runtime, element, configuration) {
         applyState();
     };
 
-    var releaseGrabbedItems = function() {
-        configuration.items.forEach(function(item) {
+    var releaseGrabbedItems = function () {
+        configuration.items.forEach(function (item) {
             item.grabbed = false;
             delete item.grabbed_with;
         });
         applyState();
     };
 
-    var submitLocation = function(item_id, zone) {
+    var submitLocation = function (item_id, zone) {
         if (!zone) {
             return;
         }
@@ -2138,7 +2219,7 @@ function DragAndDropBlock(runtime, element, configuration) {
         };
 
         $.post(url, JSON.stringify(data), 'json')
-            .done(function(data){
+            .done(function (data) {
                 state.items[item_id].submitting_location = false;
                 // In standard mode we immediately return item to the bank if dropped on wrong zone.
                 // In assessment mode we leave it in the chosen zone until explicit answer submission.
@@ -2170,7 +2251,7 @@ function DragAndDropBlock(runtime, element, configuration) {
             });
     };
 
-    var closePopupEventHandler = function(evt) {
+    var closePopupEventHandler = function (evt) {
         if (!state.feedback) {
             return;
         }
@@ -2193,7 +2274,7 @@ function DragAndDropBlock(runtime, element, configuration) {
         }
     };
 
-    var closePopup = function(manually_closed) {
+    var closePopup = function (manually_closed) {
         // do not apply state here - callers are responsible to call it when other appropriate state changes are applied
         if ($root.find(Selector.popup_box).is(":visible")) {
             state.closing = true;
@@ -2202,20 +2283,20 @@ function DragAndDropBlock(runtime, element, configuration) {
         }
     };
 
-    var resetProblem = function(evt) {
+    var resetProblem = function (evt) {
         evt.preventDefault();
         $.ajax({
             type: 'POST',
             url: runtime.handlerUrl(element, 'reset'),
             data: '{}',
-        }).done(function(data) {
+        }).done(function (data) {
             state = data;
             applyState();
             focusFirstDraggable();
         });
     };
 
-    var showAnswer = function(evt) {
+    var showAnswer = function (evt) {
         evt.preventDefault();
         state.show_answer_spinner = true;
         applyState();
@@ -2224,18 +2305,41 @@ function DragAndDropBlock(runtime, element, configuration) {
             type: 'POST',
             url: runtime.handlerUrl(element, 'show_answer'),
             data: '{}',
-        }).done(function(data) {
+        }).done(function (data) {
             state.items = data.items;
             state.showing_answer = true;
             delete state.feedback;
-        }).always(function() {
+        }).always(function () {
             state.show_answer_spinner = false;
             applyState();
             $root.find('.item-bank').focus();
         });
     };
 
-    var doAttempt = function(evt) {
+    var explainToggle = function (evt) {
+        if ($('.view_explanation').length) {
+            if ($('.explaination-card').length) {
+                var displayExplaination = $('.explaination-card').css('display');
+
+
+                if (displayExplaination == 'none') {
+                    var hide_button_html = 'Hide Explanation <img class="arrow-image" src=\'../../../../static/images/uparrow.png\'>';
+                    $('#view_explanation').html(hide_button_html);
+                    $('.explaination-card').css('display', 'block');
+                } else {
+                    var view_button_html = 'View Explanation <img class="arrow-image" src=\'../../../../static/images/downarrow.png\'>';
+                    $('#view_explanation').html(view_button_html);
+                    $('.explaination-card').css('display', 'none');
+                }
+
+
+            }
+
+        }
+    };
+
+
+    var doAttempt = function (evt) {
         evt.preventDefault();
         state.submit_spinner = true;
         applyState();
@@ -2244,7 +2348,7 @@ function DragAndDropBlock(runtime, element, configuration) {
             type: 'POST',
             url: runtime.handlerUrl(element, "do_attempt"),
             data: '{}'
-        }).done(function(data){
+        }).done(function (data) {
             state.attempts = data.attempts;
             state.grade = data.grade;
             state.feedback = data.feedback;
@@ -2252,25 +2356,30 @@ function DragAndDropBlock(runtime, element, configuration) {
             state.last_action_correct = data.correct;
 
             if (attemptsRemain()) {
-                data.misplaced_items.forEach(function(misplaced_item_id) {
+                data.misplaced_items.forEach(function (misplaced_item_id) {
                     delete state.items[misplaced_item_id]
                 });
             } else {
                 state.finished = true;
             }
             setScreenReaderMessages();
-        }).always(function() {
+        }).always(function () {
             state.submit_spinner = false;
             applyState();
-            focusItemFeedbackPopup() || focusFirstDraggable();
+            // focusItemFeedbackPopup() || focusFirstDraggable();
+            focusFirstDraggable();
+            if($('.expalanation-block').length)
+            {
+                $('.expalanation-block').css('display','block');
+            }
         });
     };
 
-    var canSubmitAttempt = function() {
+    var canSubmitAttempt = function () {
         return Object.keys(state.items).length > 0 && isPastDue() && attemptsRemain() && !submittingLocation();
     };
 
-    var canReset = function() {
+    var canReset = function () {
         var any_items_placed = false;
         // Now set any_items_placed to true if any items have been successfully placed on the board.
         // Exclude just-dropped items that are making an AJAX call to the server, or else screen readers
@@ -2290,25 +2399,25 @@ function DragAndDropBlock(runtime, element, configuration) {
         return !configuration.has_deadline_passed;
     };
 
-    var canShowAnswer = function() {
+    var canShowAnswer = function () {
         return configuration.mode === DragAndDropBlock.ASSESSMENT_MODE && !attemptsRemain();
     };
 
-    var attemptsRemain = function() {
+    var attemptsRemain = function () {
         return !configuration.max_attempts || configuration.max_attempts > state.attempts;
     };
 
-    var submittingLocation = function() {
+    var submittingLocation = function () {
         var result = false;
-        Object.keys(state.items).forEach(function(item_id) {
+        Object.keys(state.items).forEach(function (item_id) {
             var item = state.items[item_id];
             result = result || item.submitting_location;
         });
         return result;
     }
 
-    var render = function() {
-        var items = configuration.items.map(function(item) {
+    var render = function () {
+        var items = configuration.items.map(function (item) {
             var item_user_state = state.items[item.id];
             var grabbed = false;
             if (item.grabbed !== undefined) {
@@ -2405,7 +2514,7 @@ function DragAndDropBlock(runtime, element, configuration) {
      * We have to do this in JS, not python, since some migrations depend on the image size,
      * which is not known in Python-land.
      */
-    var migrateConfiguration = function(bg_image_width) {
+    var migrateConfiguration = function (bg_image_width) {
         for (var i in configuration.items) {
             var item = configuration.items[i];
             // Convert from old-style pixel widths to new-style percentage widths:
@@ -2421,7 +2530,7 @@ function DragAndDropBlock(runtime, element, configuration) {
      * Most migrations are applied in python, but migrations may depend on the image size,
      * which is not known in Python-land.
      */
-    var migrateState = function() {
+    var migrateState = function () {
         // JS migrations were squashed down to "do nothing", but decided to keep the method
         // to give a hint to future developers that migrations can be applied in JS
     };
@@ -2431,13 +2540,13 @@ function DragAndDropBlock(runtime, element, configuration) {
      * alignment, so they can be properly placed inside the zone.
      * We have do this in JS, not python, since zone configurations may change.
      */
-    var markItemZoneAlign = function() {
+    var markItemZoneAlign = function () {
         var zone_alignments = {};
-        configuration.zones.forEach(function(zone) {
+        configuration.zones.forEach(function (zone) {
             if (!zone.align) zone.align = DEFAULT_ZONE_ALIGN;
             zone_alignments[zone.uid] = zone.align;
         });
-        Object.keys(state.items).forEach(function(item_id) {
+        Object.keys(state.items).forEach(function (item_id) {
             var item = state.items[item_id];
             item.zone_align = zone_alignments[item.zone] || DEFAULT_ZONE_ALIGN;
         });
