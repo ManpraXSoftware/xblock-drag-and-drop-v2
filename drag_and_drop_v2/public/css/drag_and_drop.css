@@ -979,6 +979,7 @@ p.zone-count {
     padding: 0 5px;
     display: inline-block;
     height: 100%;
+    margin-top: 8px;
 }
 
 /* .ltr .xblock--drag-and-drop .sidebar-buttons .sidebar-button-wrapper {

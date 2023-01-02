@@ -1079,7 +1079,7 @@ function DragAndDropTemplates(configuration) {
         } else {
             main_element_properties.attributes['aria-label'] = gettext('Drag and Drop Problem');
         }
-        var problemHeader = (configuration.max_items_per_zone != 1) ? h('h4.title1', gettext('Pick and drop type questions')) : h('h4.title1', gettext('Match type questions'));
+        var problemHeader = (configuration.max_items_per_zone != 1) ? h('h4.title1', gettext('Pick and drop type question')) : h('h4.title1', gettext('Match type question'));
         // Render only items in the bank here, including placeholders.  Placed
         // items will be rendered by zoneTemplate.
         var items_in_bank = [];
@@ -2290,8 +2290,13 @@ function DragAndDropBlock(runtime, element, configuration) {
             url: runtime.handlerUrl(element, 'reset'),
             data: '{}',
         }).done(function (data) {
+            if($('.expalanation-block').length)
+            {
+                $('.expalanation-block').css('display','none');
+            }
             state = data;
             applyState();
+            
             focusFirstDraggable();
         });
     };
