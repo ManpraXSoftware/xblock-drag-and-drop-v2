@@ -526,6 +526,7 @@ p.pick_drop-text {
 h5.column {
     margin-left: 24px;
     color: #A48CFA !important;
+    margin-bottom: 7px;
 }
 
 .xblock--drag-and-drop .zone-with-borders {
