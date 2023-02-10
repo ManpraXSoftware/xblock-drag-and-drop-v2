@@ -980,7 +980,7 @@ p.zone-count {
     padding: 0 5px;
     display: inline-block;
     height: 100%;
-    margin-top: 8px;
+    margin-top: 5px;
 }
 
 /* .ltr .xblock--drag-and-drop .sidebar-buttons .sidebar-button-wrapper {
@@ -1002,6 +1002,7 @@ p.zone-count {
 .ltr .xblock--drag-and-drop .sidebar-buttons .sidebar-button-wrapper:last-child {
     border-right: none;
     padding-right: 0;
+    margin-right: 70px;
 }
 
 .rtl .xblock--drag-and-drop .sidebar-buttons .sidebar-button-wrapper:last-child {
